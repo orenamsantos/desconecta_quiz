@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState, useEffect, useRef } from "react";
+// Importamos apenas o que é essencial para o quiz rodar primeiro
+import * as LucideIcons from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function App() {
+  // ... seu código continua aqui
 
 function App() {
   const [count, setCount] = useState(0)
