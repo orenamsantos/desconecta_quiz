@@ -23,14 +23,11 @@ const SOURCES = [
   "desconecta-quiz-v3.jsx",
 ];
 
-// Bootstrap idêntico ao inline <script type="text/babel"> que existia no index.html
+// Bootstrap: monta o App direto no #root, sem envolver em IOSDevice.
+// IOSDevice continua disponível no bundle (para uso interno em outras telas
+// se necessário), só não envolve mais o App inteiro.
 const BOOTSTRAP = `
-function __Mount(){
-  return React.createElement(IOSDevice, { width: 402, height: 874 },
-    React.createElement(App, null)
-  );
-}
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__Mount));
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 `;
 
 async function build() {
