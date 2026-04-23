@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#E8532E"/>
+<meta name="description" content="Test de Dependencia Infantil — Desconecta"/>
+<title>Desconecta — Test de Dependencia Infantil</title>
+
+<!-- Favicon inline (zero request) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23E8532E'/%3E%3Cg fill='white'%3E%3Cg transform='rotate(0 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(45 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(90 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(135 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(180 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(225 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(270 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(315 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Ccircle cx='24' cy='24' r='9'/%3E%3C/g%3E%3C/svg%3E"/>
+
+<!-- Preconnect para Google Fonts (antes de qualquer CSS request) -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+
+<!-- Fonts: carregadas via <link> no head, display=swap. Isso substitui o @import
+     que existia dentro do CSS injetado pelo React (aquele @import ainda existe
+     no GCSS como fallback, mas o navegador deduplica a request). -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap"/></noscript>
+
+<!-- CSS crítico inline (evita render-blocking). -->
+<style>
+  html,body{margin:0;padding:0;background:#f3f2ee;min-height:100vh;font-family:'Inter',-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+  #root{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 0}
+  .__splash{width:28px;height:28px;border:3px solid #E8532E33;border-top-color:#E8532E;border-radius:50%;animation:__r .8s linear infinite}
+  @keyframes __r{to{transform:rotate(360deg)}}
+</style>
+
+<!-- Preload do bundle principal (early fetch, antes do parser chegar no script tag) -->
+<link rel="preload" href="__BUNDLE__" as="script"/>
+<link rel="preload" href="__REACT__" as="script"/>
+<link rel="preload" href="__REACT_DOM__" as="script"/>
+</head>
+<body>
+<div id="root"><div class="__splash"></div></div>
+
+<!-- React production builds self-hosted (mesma origem, cache immutable via vercel.json) -->
+<script src="__REACT__"></script>
+<script src="__REACT_DOM__"></script>
+
+<!-- Bundle pré-compilado com hash (immutable). Substitui os 4 <script type="text/babel"> + Babel Standalone. -->
+<script src="__BUNDLE__"></script>
+</body>
+</html>
