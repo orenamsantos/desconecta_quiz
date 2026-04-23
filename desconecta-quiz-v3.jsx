@@ -344,22 +344,40 @@ function ScoreRing({score, animated}){
 // pra não antecipar a oferta mais barata e derrubar o ticket médio.
 function ExitIntent({show,onAccept,childName}){
   const [open,setOpen] = useState(false);
-  const [dismissed,setDismissed] = useState(false);
+  // LOOP MODE: não tem "dismissed" permanente. Toda vez que fecha, rearma.
+  // A pessoa só escapa: (a) comprando $7, (b) fechando a aba.
+
+  // Helper: (re)injeta o state fake pro back button disparar popstate de novo
+  const armBackGuard = function(){
+    try { history.pushState({__exitGuard:Date.now()}, ""); } catch(_){}
+  };
+
   useEffect(function(){
-    if(!show||dismissed)return;
-    // Desktop: mouse sai pela borda superior (indo pra aba/fechar)
-    var ml = function(e){ if(e.clientY<=0 && !dismissed) setOpen(true); };
+    if(!show) return;
+    // Desktop: mouseleave pela borda superior
+    var ml = function(e){ if(e.clientY<=0) setOpen(true); };
     document.addEventListener("mouseleave", ml);
-    // Mobile: back button / swipe back — injeta state fake, intercepta popstate
-    var pushed = false;
-    try { history.pushState({__exitGuard:1}, ""); pushed = true; } catch(_){}
-    var pop = function(){ if(!dismissed) setOpen(true); };
+    // Mobile: arma o guard inicial
+    armBackGuard();
+    var pop = function(){
+      setOpen(true);
+      // Re-injeta IMEDIATAMENTE pro próximo back também pegar (loop)
+      armBackGuard();
+    };
     window.addEventListener("popstate", pop);
     return function(){
       document.removeEventListener("mouseleave", ml);
       window.removeEventListener("popstate", pop);
     };
-  }, [show,dismissed]);
+  }, [show]);
+
+  // Quando o modal FECHA (sem aceitar), rearma o guard pra próxima tentativa
+  // de saída disparar o popup de novo = loop.
+  const closeAndRearm = function(){
+    setOpen(false);
+    // Pequeno delay pra garantir que o popstate atual terminou antes de rearmar
+    setTimeout(armBackGuard, 50);
+  };
 
   // Trava scroll do body enquanto modal aberto (evita que a pessoa role por trás)
   useEffect(function(){
@@ -386,7 +404,7 @@ function ExitIntent({show,onAccept,childName}){
   // que possa quebrar position:fixed no mobile.
   var modal = <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,width:"100vw",height:"100vh",minHeight:"100dvh",background:"rgba(20,10,5,0.78)",zIndex:2147483647,display:"flex",alignItems:"center",justifyContent:"center",padding:20,boxSizing:"border-box",animation:"fi .25s ease both",WebkitBackdropFilter:"blur(4px)",backdropFilter:"blur(4px)",overflowY:"auto"}}>
     <div style={{background:"linear-gradient(180deg,#FFFDF8,#FFF8EE)",border:"2px solid #C9A961",borderRadius:16,padding:"26px 22px 22px",maxWidth:380,width:"100%",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,.5)",animation:"fadeInUp .35s ease both",margin:"auto"}}>
-      <button onClick={function(){setDismissed(true);setOpen(false)}} style={{position:"absolute",top:10,right:14,background:"none",border:"none",fontSize:24,color:"var(--tl)",cursor:"pointer",fontWeight:300,lineHeight:1}}>×</button>
+      <button onClick={closeAndRearm} style={{position:"absolute",top:10,right:14,background:"none",border:"none",fontSize:24,color:"var(--tl)",cursor:"pointer",fontWeight:300,lineHeight:1}}>×</button>
       <div style={{fontSize:10,fontWeight:900,color:"#8B6914",letterSpacing:"0.14em",marginBottom:8,textAlign:"center"}}>⚡ ESPERA — UNA OFERTA MÁS</div>
       <h3 style={{fontSize:22,fontWeight:900,textAlign:"center",lineHeight:1.2,marginBottom:10,fontFamily:"var(--fh)",fontWeight:400}}>Entendemos — $17 es real.</h3>
       <p style={{fontSize:14,color:"var(--tm)",textAlign:"center",lineHeight:1.55,marginBottom:16}}>
@@ -402,7 +420,7 @@ function ExitIntent({show,onAccept,childName}){
         <div style={{fontSize:11,color:"var(--tm)",marginTop:4,lineHeight:1.4}}>App + plan 21 días + actividades básicas<br/>Misma garantía 7 días</div>
       </div>
       <Btn onClick={function(){setOpen(false);onAccept&&onAccept()}} pulse>SÍ, RESCATAR POR $7 →</Btn>
-      <button onClick={function(){setDismissed(true);setOpen(false)}} style={{width:"100%",marginTop:10,padding:10,background:"none",border:"none",fontSize:12,color:"var(--tl)",textDecoration:"underline",cursor:"pointer",fontFamily:"var(--ft)"}}>No gracias, cierro la oportunidad</button>
+      <button onClick={closeAndRearm} style={{width:"100%",marginTop:10,padding:10,background:"none",border:"none",fontSize:12,color:"var(--tl)",textDecoration:"underline",cursor:"pointer",fontFamily:"var(--ft)"}}>No gracias, cierro la oportunidad</button>
     </div>
   </div>;
   // Renderiza via portal no document.body — imune a overflow/transform do pai
