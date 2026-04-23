@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#E8532E"/>
+<meta name="description" content="Test de Dependencia Infantil — Desconecta"/>
+<title>Desconecta — Test de Dependencia Infantil</title>
+
+<!-- Favicon inline (zero request) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23E8532E'/%3E%3Cg fill='white'%3E%3Cg transform='rotate(0 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(45 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(90 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(135 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(180 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(225 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(270 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(315 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Ccircle cx='24' cy='24' r='9'/%3E%3C/g%3E%3C/svg%3E"/>
+
+<!-- Preconnect para Google Fonts (antes de qualquer CSS request) -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+
+<!-- Fonts: carregadas via <link> no head, display=swap. Isso substitui o @import
+     que existia dentro do CSS injetado pelo React (aquele @import ainda existe
+     no GCSS como fallback, mas o navegador deduplica a request). -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap"/></noscript>
+
+<!-- CSS crítico inline: estilos do hero estático + dimensionamento. Tudo o que
+     aparece antes do React montar precisa estar aqui (ou inline em cada elemento). -->
+<style>
+  html,body{margin:0;padding:0;background:#F7F5F0;font-family:'Inter',-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;color:#1A1A1A}
+  html,body,#root{height:100%}
+  body{min-height:100vh;min-height:100dvh}
+  #root{position:relative}
+
+  /* ─── Hero estático (pré-React). Visualmente idêntico à primeira tela do
+     quiz (data-act="1"). Dispara FCP/LCP em ~400ms em vez de 2.6s. ─── */
+  .__intro{padding:68px 20px 32px;text-align:center;max-width:460px;margin:0 auto}
+  .__logoRow{display:inline-flex;align-items:center;gap:11px;font-family:'Instrument Serif',Georgia,serif;font-size:30.8px;color:#E8532E;letter-spacing:-0.015em;line-height:1;font-weight:400}
+  .__logoMark{width:33px;height:33px;flex-shrink:0;vertical-align:middle}
+  .__label{font-size:9px;color:#888;letter-spacing:0.18em;font-weight:700;margin-top:2px}
+  .__alert{background:#FDEAEA;border:1px solid #F5C6C6;border-radius:12px;padding:10px 14px;margin:16px 0 18px}
+  .__alertH{font-size:11px;font-weight:900;color:#D32F2F;letter-spacing:0.05em;margin-bottom:2px}
+  .__alertB{font-size:11px;color:#4A4A4A;line-height:1.4}
+  .__h1{font-family:'Instrument Serif',Georgia,serif;font-size:26px;font-weight:900;line-height:1.2;margin:0 0 10px;letter-spacing:-0.01em;color:#1A1A1A}
+  .__sub{font-size:16px;font-weight:700;color:#4A4A4A;margin:0 0 6px;line-height:1.4}
+  .__hl{color:#E8532E}
+  .__rot{height:36px;display:flex;align-items:center;justify-content:center;margin:14px 0;font-weight:700}
+  .__rotL{font-size:13px;color:#888}
+  .__rotW{font-size:15px;font-weight:900;color:#E8532E;font-style:italic}
+  .__desc{font-size:14px;color:#4A4A4A;line-height:1.55;margin:0 0 18px}
+  .__btn{width:100%;padding:17px 24px;background:#E8532E;color:#fff;border:none;border-radius:14px;font-family:'Inter',-apple-system,sans-serif;font-size:16px;font-weight:900;letter-spacing:0.01em;box-shadow:0 4px 16px rgba(232,83,46,.35);cursor:pointer}
+  .__fine{font-size:11px;color:#888;margin:10px 0 0;font-weight:600}
+  .__badges{display:flex;justify-content:center;gap:14px;margin-top:16px;font-size:11px;color:#888;font-weight:600}
+  .__splash{margin:22px auto 0;width:24px;height:24px;border:2.5px solid #E8532E33;border-top-color:#E8532E;border-radius:50%;animation:__r .8s linear infinite}
+  @keyframes __r{to{transform:rotate(360deg)}}
+</style>
+
+<!-- Preload do bundle principal (early fetch, antes do parser chegar no script tag) -->
+<link rel="preload" href="__BUNDLE__" as="script"/>
+<link rel="preload" href="__REACT__" as="script"/>
+<link rel="preload" href="__REACT_DOM__" as="script"/>
+</head>
+<body>
+<div id="root"><div class="__intro">
+  <div class="__logoRow">
+    <svg class="__logoMark" viewBox="0 0 48 48" aria-hidden="true">
+      <g fill="#E8532E">
+        <g transform="rotate(0 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(45 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(90 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(135 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(180 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(225 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(270 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+        <g transform="rotate(315 24 24)"><path d="M 24 4 L 26 10 L 22 10 Z"/></g>
+      </g>
+      <circle cx="24" cy="24" r="9" fill="#E8532E"/>
+    </svg><span>desconecta</span>
+  </div>
+  <div class="__label">TEST DE DEPENDENCIA INFANTIL</div>
+  <div class="__alert">
+    <div class="__alertH">⚠ 12.347 FAMILIAS YA LO HICIERON</div>
+    <div class="__alertB">El 73% de los niños en LATAM ya muestra señales de dependencia por dopamina.</div>
+  </div>
+  <h1 class="__h1">¿Tu hijo ya no sabe jugar sin pantalla?</h1>
+  <p class="__sub">Descubre <span class="__hl">qué tan grave es</span> — y si aún estás a tiempo.</p>
+  <div class="__rot"><span class="__rotL">Hijos que vuelven a&nbsp;</span><span class="__rotW">dormir mejor</span></div>
+  <p class="__desc">Responde <strong>8 preguntas</strong>. Te damos el diagnóstico y el plan de los próximos 21 días.</p>
+  <button class="__btn" type="button">VER SI AÚN ES REVERSIBLE →</button>
+  <p class="__fine">Gratis • 2 minutos • 12.347 familias ya lo hicieron</p>
+  <div class="__badges"><span>🔒 Datos seguros</span><span>📱 Android + iPhone</span></div>
+  <div class="__splash" aria-hidden="true"></div>
+</div></div>
+
+<!-- React production builds self-hosted (mesma origem, cache immutable via vercel.json) -->
+<script src="__REACT__"></script>
+<script src="__REACT_DOM__"></script>
+
+<!-- Bundle pré-compilado com hash (immutable). Substitui os 4 <script type="text/babel"> + Babel Standalone. -->
+<script src="__BUNDLE__"></script>
+</body>
+</html>

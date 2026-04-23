@@ -1,0 +1,26 @@
+{
+  "name": "desconecta_quiz",
+  "version": "1.0.0",
+  "description": "Desconecta Quiz — Test de Dependencia Infantil",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "vercel-build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orenamsantos/desconecta_quiz.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.28.6",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-react": "^7.28.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "terser": "^5.46.2"
+  },
+  "devDependencies": {
+    "jsdom": "^27.0.0"
+  }
+}
