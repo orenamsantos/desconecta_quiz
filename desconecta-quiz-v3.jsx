@@ -339,16 +339,26 @@ function ScoreRing({score, animated}){
   </div>;
 }
 
-// ─── Exit-intent downsell (30s timer + mouseleave on desktop) ────────────────
+// ─── Exit-intent downsell (mouseleave desktop + back-button mobile) ──────────
+// IMPORTANTE: SEM gatilho por tempo. Só aparece em intenção REAL de saída,
+// pra não antecipar a oferta mais barata e derrubar o ticket médio.
 function ExitIntent({show,onAccept,childName}){
   const [open,setOpen] = useState(false);
   const [dismissed,setDismissed] = useState(false);
   useEffect(function(){
     if(!show||dismissed)return;
-    var t = setTimeout(function(){ setOpen(true); }, 25000);
+    // Desktop: mouse sai pela borda superior (indo pra aba/fechar)
     var ml = function(e){ if(e.clientY<=0 && !dismissed) setOpen(true); };
     document.addEventListener("mouseleave", ml);
-    return function(){ clearTimeout(t); document.removeEventListener("mouseleave", ml); };
+    // Mobile: back button / swipe back — injeta state fake, intercepta popstate
+    var pushed = false;
+    try { history.pushState({__exitGuard:1}, ""); pushed = true; } catch(_){}
+    var pop = function(){ if(!dismissed) setOpen(true); };
+    window.addEventListener("popstate", pop);
+    return function(){
+      document.removeEventListener("mouseleave", ml);
+      window.removeEventListener("popstate", pop);
+    };
   }, [show,dismissed]);
   if(!open||!show) return null;
   return <div style={{position:"fixed",inset:0,background:"rgba(20,10,5,0.78)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fi .25s ease both",backdropFilter:"blur(4px)"}}>
@@ -992,7 +1002,7 @@ function App(){
           </div>
         </div>
 
-        {/* EXIT-INTENT DOWNSELL MODAL — simple trigger: after 25s on page, if not already showing */}
+        {/* EXIT-INTENT DOWNSELL MODAL — só dispara em intenção real de saída (mouseleave desktop / back button mobile). Sem timer. */}
         <ExitIntent show={scr==="pricing" && !downsell} onAccept={function(){setDownsell(true);top2()}} childName={cn}/>
       </div>
     </div>;
