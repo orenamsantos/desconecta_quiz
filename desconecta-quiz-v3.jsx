@@ -360,9 +360,32 @@ function ExitIntent({show,onAccept,childName}){
       window.removeEventListener("popstate", pop);
     };
   }, [show,dismissed]);
+
+  // Trava scroll do body enquanto modal aberto (evita que a pessoa role por trás)
+  useEffect(function(){
+    if(!open) return;
+    var prev = document.body.style.overflow;
+    var prevP = document.body.style.position;
+    var prevT = document.body.style.top;
+    var scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = "-"+scrollY+"px";
+    document.body.style.width = "100%";
+    return function(){
+      document.body.style.overflow = prev;
+      document.body.style.position = prevP;
+      document.body.style.top = prevT;
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+
   if(!open||!show) return null;
-  return <div style={{position:"fixed",inset:0,background:"rgba(20,10,5,0.78)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fi .25s ease both",backdropFilter:"blur(4px)"}}>
-    <div style={{background:"linear-gradient(180deg,#FFFDF8,#FFF8EE)",border:"2px solid #C9A961",borderRadius:16,padding:"26px 22px 22px",maxWidth:380,width:"100%",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,.5)",animation:"fadeInUp .35s ease both"}}>
+  // Portal pro document.body — sai de qualquer contexto de transform/overflow do pai
+  // que possa quebrar position:fixed no mobile.
+  var modal = <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,width:"100vw",height:"100vh",minHeight:"100dvh",background:"rgba(20,10,5,0.78)",zIndex:2147483647,display:"flex",alignItems:"center",justifyContent:"center",padding:20,boxSizing:"border-box",animation:"fi .25s ease both",WebkitBackdropFilter:"blur(4px)",backdropFilter:"blur(4px)",overflowY:"auto"}}>
+    <div style={{background:"linear-gradient(180deg,#FFFDF8,#FFF8EE)",border:"2px solid #C9A961",borderRadius:16,padding:"26px 22px 22px",maxWidth:380,width:"100%",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,.5)",animation:"fadeInUp .35s ease both",margin:"auto"}}>
       <button onClick={function(){setDismissed(true);setOpen(false)}} style={{position:"absolute",top:10,right:14,background:"none",border:"none",fontSize:24,color:"var(--tl)",cursor:"pointer",fontWeight:300,lineHeight:1}}>×</button>
       <div style={{fontSize:10,fontWeight:900,color:"#8B6914",letterSpacing:"0.14em",marginBottom:8,textAlign:"center"}}>⚡ ESPERA — UNA OFERTA MÁS</div>
       <h3 style={{fontSize:22,fontWeight:900,textAlign:"center",lineHeight:1.2,marginBottom:10,fontFamily:"var(--fh)",fontWeight:400}}>Entendemos — $17 es real.</h3>
@@ -382,6 +405,10 @@ function ExitIntent({show,onAccept,childName}){
       <button onClick={function(){setDismissed(true);setOpen(false)}} style={{width:"100%",marginTop:10,padding:10,background:"none",border:"none",fontSize:12,color:"var(--tl)",textDecoration:"underline",cursor:"pointer",fontFamily:"var(--ft)"}}>No gracias, cierro la oportunidad</button>
     </div>
   </div>;
+  // Renderiza via portal no document.body — imune a overflow/transform do pai
+  return (typeof document !== "undefined" && ReactDOM.createPortal)
+    ? ReactDOM.createPortal(modal, document.body)
+    : modal;
 }
 
 function App(){
