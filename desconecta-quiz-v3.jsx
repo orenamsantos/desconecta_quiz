@@ -4,8 +4,8 @@ const { useState, useEffect, useRef } = React;
 const PHASES = [
   { id: 1, label: "DIAGNÓSTICO",   steps: [1,2,3,4] },
   { id: 2, label: "COMPORTAMIENTO",steps: [5,6,7] },
-  { id: 3, label: "COMPROMISO",    steps: [8] },
-  { id: 4, label: "TU PLAN",       steps: [9,10,11] },
+  { id: 3, label: "HONESTIDAD",    steps: [8] },
+  { id: 4, label: "TU PLAN",       steps: [9] },
 ];
 
 const STEPS = [
@@ -15,7 +15,7 @@ const STEPS = [
     options:[{value:"2-3",label:"2–3 años"},{value:"4-5",label:"4–5 años"},{value:"6-7",label:"6–7 años"},{value:"8-9",label:"8–9 años"},{value:"10-12",label:"10–12 años"}]},
   {id:2,phase:1,type:"single",slug:"screenTime",
     headline:"¿Cuántas horas al día pasa frente a una pantalla?",
-    micro:"La mayoría miente en esta pregunta — incluso consigo mismos. Por eso no cambian nada.",
+    micro:"Sé honesto. Nadie más va a verlo.",
     options:[{value:"less-1h",label:"Menos de 1 hora"},{value:"1-2h",label:"1 a 2 horas"},{value:"2-4h",label:"2 a 4 horas"},{value:"4-6h",label:"4 a 6 horas"},{value:"6h+",label:"Más de 6 horas"},{value:"unknown",label:"No estoy seguro (es mucho)"}]},
   // id:3 é ESPELHO (não-pergunta)
   {id:3,phase:1,type:"mirror",slug:"mirror1"},
@@ -37,19 +37,13 @@ const STEPS = [
     headline:"Sé honesto contigo mismo: ¿cuál es la excusa que más usas?",
     micro:"La respuesta más dolorosa suele ser la más verdadera.",
     options:[{value:"no-time",label:"No tengo tiempo para entretenerlo"},{value:"no-ideas",label:"No sé qué ofrecerle en su lugar"},{value:"tantrums",label:"La pelea no vale la pena"},{value:"partner",label:"Mi pareja no colabora"},{value:"other-adults",label:"Otros adultos le dan pantalla"},{value:"myself",label:"Yo mismo no puedo soltar mi celular"}]},
-  // id:9 é COMMITMENT
-  {id:9,phase:3,type:"commit",slug:"commit"},
-  // id:10 = nome do filho + nome do pai/mãe juntos
-  {id:10,phase:4,type:"names",slug:"names",
+  // id:9 = nome do filho + nome do pai/mãe juntos
+  {id:9,phase:4,type:"names",slug:"names",
     headline:"Antes de mostrarte el diagnóstico…",
     micro:"Vamos a personalizar todo con los nombres reales."},
-  // id:11 = email + WhatsApp juntos
-  {id:11,phase:4,type:"contact",slug:"contact",
-    headline:"¿A dónde enviamos el diagnóstico de {child}?",
-    micro:"Acceso inmediato al app + recordatorios diarios gratis."},
 ];
 
-const TOTAL_STEPS = 11;
+const TOTAL_STEPS = 9;
 
 const COUNTRIES = [
   {name:"Argentina",flag:"🇦🇷",code:"+54"},
@@ -83,9 +77,22 @@ const LOADING_MSGS = [
   "Armando el plan de 21 días…",
 ];
 
-const GCSS = `@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+const GCSS = `@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#FFFBF5;--sf:#FFF;--pr:#E8532E;--pl:#FFF0EB;--sc:#2D936C;--sl:#E8F5EE;--dn:#D32F2F;--dl:#FDEAEA;--tx:#1A1A1A;--tm:#555;--tl:#888;--bd:#E8E0D8;--rd:14px;--ft:'Nunito','Segoe UI',sans-serif}
+:root{--bg:#FFFBF5;--sf:#FFF;--pr:#E8532E;--pl:#FFF0EB;--sc:#2D936C;--sl:#E8F5EE;--dn:#D32F2F;--dl:#FDEAEA;--tx:#1A1A1A;--tm:#555;--tl:#888;--bd:#E8E0D8;--gold:#C9A961;--rd:14px;--ft:'Inter',-apple-system,'Segoe UI',sans-serif;--fh:'Instrument Serif',Georgia,serif}
+h1,h2,h3{font-family:var(--fh);font-weight:400;letter-spacing:-0.01em;line-height:1.15}
+
+/* ─── S3: 4 ACTOS VISUALES ─── */
+/* ACTO 1 — Diagnóstico clínico (stone, serio, silencioso) */
+[data-act="1"]{--bg:#F7F5F0;--sf:#FFFEFB;--bd:#E3DFD6;--tx:#1A1A1A;--tm:#4A4A4A}
+/* ACTO 2 — Espejo/Verdad incómoda (terracota profunda, "livro antigo") */
+[data-act="2"]{--bg:#2D1810;--sf:#3A2218;--bd:#4A2E22;--tx:#F5EDE4;--tm:#D4BFA8;--tl:#9A8270;--pl:#3D1F16;--pr:#FF8C6B;--dl:#3D1F16;--dn:#FF6B47}
+[data-act="2"] h1,[data-act="2"] h2,[data-act="2"] h3{color:#F5EDE4}
+/* ACTO 3 — Compromiso/Esperanza (crème cálido, verde) */
+[data-act="3"]{--bg:#FFFBF5;--sf:#FFF;--pr:#2D936C;--pl:#E8F5EE}
+/* ACTO 4 — Resultado/Pricing premium (dourado sutil) */
+[data-act="4"]{--bg:#FFFBF5;--sf:#FFFDF8}
+
 @keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes si{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 @keyframes so{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-30px)}}
@@ -94,25 +101,61 @@ const GCSS = `@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 @keyframes countUp{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
 @keyframes drawBar{from{width:0}to{width:var(--bw)}}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}`;
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes actTransition{0%{opacity:0;filter:blur(8px)}50%{opacity:0.4;filter:blur(2px)}100%{opacity:1;filter:none}}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:0.92}52%{opacity:1}54%{opacity:0.95}}
+@keyframes slowPulse{0%,100%{transform:scale(1);box-shadow:0 4px 14px rgba(232,83,46,.25)}50%{transform:scale(1.015);box-shadow:0 6px 22px rgba(255,140,107,.45)}}`;
+
+// S3: mapeia step id → ato visual (1-4)
+function actForStep(stepId){
+  if([3,6].indexOf(stepId)>=0) return 2; // espelho + transição = verdade incômoda (só 2 picos)
+  if([9].indexOf(stepId)>=0) return 3;   // nomes = esperança
+  return 1; // 1,2,4,5,7,8 = diagnóstico clínico
+}
 
 const SH = {fontFamily:"var(--ft)",background:"var(--bg)",color:"var(--tx)",height:"100%",overflowY:"auto",position:"relative",lineHeight:1.55,WebkitOverflowScrolling:"touch"};
 const INP = {width:"100%",padding:"16px 14px",fontSize:16,fontFamily:"var(--ft)",border:"2px solid var(--bd)",borderRadius:"var(--rd)",background:"var(--sf)",outline:"none",fontWeight:600,color:"var(--tx)"};
 
 function Btn({children,onClick,disabled,pulse}){
-  return <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"17px 24px",background:disabled?"#ccc":"var(--pr)",color:disabled?"#999":"#fff",border:"none",borderRadius:"var(--rd)",fontFamily:"var(--ft)",fontSize:16,fontWeight:900,cursor:disabled?"default":"pointer",transition:"all .15s",boxShadow:disabled?"none":"0 4px 16px rgba(232,83,46,.35)",letterSpacing:"0.01em",animation:pulse&&!disabled?"pulse 2s ease-in-out infinite":"none"}}>{children}</button>;
+  return <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"17px 24px",background:disabled?"#ccc":"var(--pr)",color:disabled?"#999":"#fff",border:"none",borderRadius:"var(--rd)",fontFamily:"var(--ft)",fontSize:16,fontWeight:900,cursor:disabled?"default":"pointer",transition:"all .15s",boxShadow:disabled?"none":"0 4px 16px rgba(232,83,46,.35)",letterSpacing:"0.01em",animation:pulse&&!disabled?"slowPulse 2.4s ease-in-out infinite":"none"}}>{children}</button>;
+}
+
+// ─── LOGO: sol folk LATAM (8 raios triangulares + círculo) + wordmark serif ──
+function Logo({color,size}){
+  var c = color || "var(--pr)";
+  var s = size || 1;
+  var markPx = s*30;
+  return <div style={{display:"inline-flex",alignItems:"center",gap:s*10,fontFamily:"var(--fh)",fontWeight:400,fontSize:s*28,color:c,letterSpacing:"-0.015em",lineHeight:1}}>
+    <LogoMark color={c} size={markPx}/>
+    <span>desconecta</span>
+  </div>;
+}
+
+// Sol folk: 8 raios triangulares + disco central
+function LogoMark({color,size}){
+  var c = color || "var(--pr)";
+  var s = size || 32;
+  return <svg width={s} height={s} viewBox="0 0 48 48" style={{display:"inline-block",verticalAlign:"middle",flexShrink:0}}>
+    {[0,45,90,135,180,225,270,315].map(function(a){
+      return <g key={a} transform={`rotate(${a} 24 24)`}>
+        <path d="M 24 4 L 26 10 L 22 10 Z" fill={c}/>
+      </g>;
+    })}
+    <circle cx="24" cy="24" r="9" fill={c}/>
+  </svg>;
 }
 
 function PBar({pid,cur}){
   var pct = Math.round((cur / TOTAL_STEPS) * 100);
-  return <div style={{padding:"10px 18px 8px",background:"var(--bg)",position:"sticky",top:0,zIndex:10}}>
-    <div style={{display:"flex",gap:4,marginBottom:6}}>
-      {PHASES.map(function(p){return <div key={p.id} style={{flex:p.steps.length,textAlign:"center"}}>
-        <div style={{height:4,borderRadius:2,marginBottom:4,background:p.id<=pid?"var(--pr)":"var(--bd)",transition:"background .3s"}}/>
-        <span style={{fontSize:8.5,fontWeight:p.id===pid?900:600,color:p.id===pid?"var(--pr)":"var(--tl)",letterSpacing:"0.06em"}}>{p.label}</span>
-      </div>})}
+  var activePhase = PHASES.find(function(p){return p.id===pid}) || PHASES[0];
+  return <div style={{padding:"52px 18px 10px",background:"var(--bg)",position:"sticky",top:0,zIndex:10}}>
+    <div style={{display:"flex",gap:4,marginBottom:8}}>
+      {PHASES.map(function(p){return <div key={p.id} style={{flex:p.steps.length,height:4,borderRadius:2,background:p.id<=pid?"var(--pr)":"var(--bd)",transition:"background .3s"}}/>})}
     </div>
-    <div style={{textAlign:"right",fontSize:10,color:"var(--tl)",fontWeight:700}}>{pct}% completado • paso {cur} de {TOTAL_STEPS}</div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:10,fontWeight:700}}>
+      <span style={{color:"var(--pr)",fontWeight:900,letterSpacing:"0.08em"}}>FASE {activePhase.id} DE {PHASES.length} — {activePhase.label}</span>
+      <span style={{color:"var(--tl)"}}>{pct}% • paso {cur}/{TOTAL_STEPS}</span>
+    </div>
   </div>;
 }
 
@@ -121,6 +164,86 @@ function OCard({o,sel,onClick}){
     <span style={{fontSize:14,fontWeight:sel?800:600,color:"var(--tx)",flex:1,lineHeight:1.4}}>{o.label}</span>
     {sel && <span style={{color:"var(--pr)",fontWeight:800,fontSize:18}}>✓</span>}
   </button>;
+}
+
+// ─── Personal countdown (72h desde la primera visita, en UTC) ───────────────────
+// DEBUG: para probar "3 días pasados" ahora mismo, abrí la consola del navegador y ejecutá:
+//   localStorage.setItem('desconecta_inicio_oferta_utc', (Date.now() - 1000*60*60*73).toString()); location.reload();
+// Para resetear el contador (simular primera visita):
+//   localStorage.removeItem('desconecta_inicio_oferta_utc'); location.reload();
+function PersonalCountdown({onExpire}){
+  const KEY = 'desconecta_inicio_oferta_utc';
+  const DURATION_MS = 72 * 60 * 60 * 1000; // 72h
+  const [now, setNow] = useState(Date.now());
+
+  // Inicializa el inicio de la oferta en la primera visita (UTC absoluto via Date.now())
+  useEffect(function(){
+    if(!localStorage.getItem(KEY)){
+      localStorage.setItem(KEY, Date.now().toString());
+    }
+  }, []);
+
+  // Tick cada segundo
+  useEffect(function(){
+    var iv = setInterval(function(){ setNow(Date.now()); }, 1000);
+    return function(){ clearInterval(iv); };
+  }, []);
+
+  var startRaw = localStorage.getItem(KEY);
+  var start = startRaw ? parseInt(startRaw, 10) : now;
+  var endTs = start + DURATION_MS;
+  var remaining = endTs - now;
+  var expired = remaining <= 0;
+
+  useEffect(function(){ if(expired && onExpire) onExpire(); }, [expired]);
+
+  if(expired){
+    return <div style={{background:"var(--dn)",color:"#fff",padding:"62px 16px 14px",textAlign:"center"}}>
+      <div style={{fontSize:11,fontWeight:800,letterSpacing:"0.14em",marginBottom:4,opacity:0.9,display:"inline-flex",alignItems:"center",gap:6,justifyContent:"center"}}><Icon name="alarm" size={13} color="#fff" strokeWidth={2}/>TU OFERTA PERSONALIZADA EXPIRÓ</div>
+      <div style={{fontSize:13,fontWeight:600,opacity:0.95}}>La próxima cohorte abre en unos días. Deja tu email para avisarte.</div>
+    </div>;
+  }
+
+  var totalSec = Math.floor(remaining/1000);
+  var d = Math.floor(totalSec / 86400);
+  var h = Math.floor((totalSec % 86400) / 3600);
+  var m = Math.floor((totalSec % 3600) / 60);
+  var s = totalSec % 60;
+  var pad = function(n){return n<10?"0"+n:""+n};
+
+  // Cor dinâmica baseada no tempo restante
+  var hoursLeft = remaining / (1000*60*60);
+  var urgent = hoursLeft < 12;   // últimas 12h: vermelho puro + pulse
+  var warning = hoursLeft < 24;  // últimas 24h: laranja intenso
+  var bgGrad = urgent
+    ? "linear-gradient(135deg,#D32F2F,#8B0000)"
+    : warning
+    ? "linear-gradient(135deg,#E8532E,#B33C1A)"
+    : "linear-gradient(135deg,#E8532E,#C73E1D)";
+
+  var boxSt = {background:"rgba(255,255,255,0.18)",borderRadius:10,padding:"7px 4px",minWidth:46,textAlign:"center",backdropFilter:"blur(4px)",border:"1px solid rgba(255,255,255,0.12)"};
+  var numSt = {fontSize:20,fontWeight:800,lineHeight:1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em"};
+  var lblSt = {fontSize:8.5,fontWeight:700,letterSpacing:"0.1em",opacity:0.85,marginTop:3,textTransform:"uppercase"};
+
+  return <div style={{background:bgGrad,color:"#fff",padding:"62px 16px 14px",textAlign:"center",position:"relative",overflow:"hidden",animation:urgent?"pulse 1.5s ease-in-out infinite":"none"}}>
+    <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at top, rgba(255,255,255,0.15), transparent 60%)",pointerEvents:"none"}}/>
+    <div style={{position:"relative"}}>
+      <div style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10,fontWeight:800,letterSpacing:"0.14em",marginBottom:10,opacity:0.95}}>
+        <span style={{width:6,height:6,borderRadius:"50%",background:"#FFD166",animation:"pulse 1.2s ease-in-out infinite"}}/>
+        {urgent ? "¡ÚLTIMAS HORAS! TU OFERTA TERMINA EN" : "TU OFERTA PERSONALIZADA TERMINA EN"}
+      </div>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"stretch",gap:6}}>
+        <div style={boxSt}><div style={numSt}>{pad(d)}</div><div style={lblSt}>días</div></div>
+        <div style={{display:"flex",alignItems:"center",fontSize:16,fontWeight:900,opacity:0.6}}>:</div>
+        <div style={boxSt}><div style={numSt}>{pad(h)}</div><div style={lblSt}>horas</div></div>
+        <div style={{display:"flex",alignItems:"center",fontSize:16,fontWeight:900,opacity:0.6}}>:</div>
+        <div style={boxSt}><div style={numSt}>{pad(m)}</div><div style={lblSt}>min</div></div>
+        <div style={{display:"flex",alignItems:"center",fontSize:16,fontWeight:900,opacity:0.6}}>:</div>
+        <div style={boxSt}><div style={numSt}>{pad(s)}</div><div style={lblSt}>seg</div></div>
+      </div>
+      <div style={{fontSize:11,fontWeight:700,marginTop:10,opacity:0.9}}>Precio bloqueado para tu diagnóstico</div>
+    </div>
+  </div>;
 }
 
 // ─── Score calculation ───────────────────────────────────────────────────────
@@ -151,8 +274,17 @@ function AppMockup(){
       <rect x="18" y="8" width="224" height="404" rx="22" fill="#FFFBF5"/>
       <rect x="90" y="14" width="80" height="10" rx="5" fill="#1A1A1A" opacity="0.15"/>
       <rect x="18" y="28" width="224" height="52" fill="#E8532E"/>
-      <text x="130" y="48" textAnchor="middle" fontSize="13" fontWeight="800" fill="white" fontFamily="sans-serif">DESCONECTA</text>
-      <text x="130" y="64" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.8)" fontFamily="sans-serif">DÍA 3 DE 21 • SEMANA 1</text>
+      {/* Logo header: sol folk + wordmark serif */}
+      <g transform="translate(96, 54)">
+        {[0,45,90,135,180,225,270,315].map(function(a){
+          return <g key={a} transform={`rotate(${a})`}>
+            <path d="M 0 -14 L 1.4 -10 L -1.4 -10 Z" fill="white"/>
+          </g>;
+        })}
+        <circle cx="0" cy="0" r="6" fill="white"/>
+      </g>
+      <text x="112" y="58" fontSize="16" fontWeight="400" fill="white" fontFamily="'Instrument Serif', Georgia, serif" letterSpacing="-0.4">desconecta</text>
+      <text x="130" y="73" textAnchor="middle" fontSize="8" fill="rgba(255,255,255,0.85)" fontFamily="sans-serif" letterSpacing="1.2">DÍA 3 DE 21 • SEMANA 1</text>
       <rect x="28" y="86" width="204" height="6" rx="3" fill="#E8E0D8"/>
       <rect x="28" y="86" width="68" height="6" rx="3" fill="#E8532E"/>
       <text x="130" y="105" textAnchor="middle" fontSize="8" fill="#888" fontFamily="sans-serif">3 actividades completadas hoy</text>
@@ -207,6 +339,41 @@ function ScoreRing({score, animated}){
   </div>;
 }
 
+// ─── Exit-intent downsell (30s timer + mouseleave on desktop) ────────────────
+function ExitIntent({show,onAccept,childName}){
+  const [open,setOpen] = useState(false);
+  const [dismissed,setDismissed] = useState(false);
+  useEffect(function(){
+    if(!show||dismissed)return;
+    var t = setTimeout(function(){ setOpen(true); }, 25000);
+    var ml = function(e){ if(e.clientY<=0 && !dismissed) setOpen(true); };
+    document.addEventListener("mouseleave", ml);
+    return function(){ clearTimeout(t); document.removeEventListener("mouseleave", ml); };
+  }, [show,dismissed]);
+  if(!open||!show) return null;
+  return <div style={{position:"fixed",inset:0,background:"rgba(20,10,5,0.78)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fi .25s ease both",backdropFilter:"blur(4px)"}}>
+    <div style={{background:"linear-gradient(180deg,#FFFDF8,#FFF8EE)",border:"2px solid #C9A961",borderRadius:16,padding:"26px 22px 22px",maxWidth:380,width:"100%",position:"relative",boxShadow:"0 24px 60px rgba(0,0,0,.5)",animation:"fadeInUp .35s ease both"}}>
+      <button onClick={function(){setDismissed(true);setOpen(false)}} style={{position:"absolute",top:10,right:14,background:"none",border:"none",fontSize:24,color:"var(--tl)",cursor:"pointer",fontWeight:300,lineHeight:1}}>×</button>
+      <div style={{fontSize:10,fontWeight:900,color:"#8B6914",letterSpacing:"0.14em",marginBottom:8,textAlign:"center"}}>⚡ ESPERA — UNA OFERTA MÁS</div>
+      <h3 style={{fontSize:22,fontWeight:900,textAlign:"center",lineHeight:1.2,marginBottom:10,fontFamily:"var(--fh)",fontWeight:400}}>Entendemos — $17 es real.</h3>
+      <p style={{fontSize:14,color:"var(--tm)",textAlign:"center",lineHeight:1.55,marginBottom:16}}>
+        No queremos que {childName} se quede sin su plan por <strong style={{color:"var(--tx)"}}>$10 de diferencia</strong>.
+      </p>
+      <div style={{background:"#fff",border:"2px dashed #C9A961",borderRadius:12,padding:"14px 12px",textAlign:"center",marginBottom:14}}>
+        <div style={{fontSize:11,color:"#8B6914",fontWeight:800,letterSpacing:"0.08em",marginBottom:4}}>VERSIÓN ESENCIAL</div>
+        <div style={{display:"inline-flex",alignItems:"baseline",gap:4}}>
+          <span style={{fontSize:13,color:"var(--tl)",textDecoration:"line-through"}}>$17</span>
+          <span style={{fontSize:40,fontWeight:900,color:"var(--pr)",letterSpacing:"-0.02em"}}>$7</span>
+          <span style={{fontSize:12,color:"var(--tm)",fontWeight:700}}>USD</span>
+        </div>
+        <div style={{fontSize:11,color:"var(--tm)",marginTop:4,lineHeight:1.4}}>App + plan 21 días + actividades básicas<br/>Misma garantía 7 días</div>
+      </div>
+      <Btn onClick={function(){setOpen(false);onAccept&&onAccept()}} pulse>SÍ, RESCATAR POR $7 →</Btn>
+      <button onClick={function(){setDismissed(true);setOpen(false)}} style={{width:"100%",marginTop:10,padding:10,background:"none",border:"none",fontSize:12,color:"var(--tl)",textDecoration:"underline",cursor:"pointer",fontFamily:"var(--ft)"}}>No gracias, cierro la oportunidad</button>
+    </div>
+  </div>;
+}
+
 function App(){
   const [scr,setScr] = useState("start");
   const [cur,setCur] = useState(1);
@@ -219,6 +386,9 @@ function App(){
   const [ad,setAd] = useState("in");
   const [wi,setWi] = useState(0);
   const [efq,setEfq] = useState(null);
+  const [downsell,setDownsell] = useState(false);
+  const [bump,setBump] = useState(true); // order bump pre-checked
+  const [cc,setCc] = useState({email:"",name:"",card:"",exp:"",cvv:""});
   const [countryOpen,setCountryOpen] = useState(false);
   const [commitYes,setCommitYes] = useState(false);
   const rf = useRef(null);
@@ -249,8 +419,7 @@ function App(){
     if(!stp) return false;
     if(stp.type==="single") return !!ans[stp.slug];
     if(stp.type==="multi") return (ans[stp.slug]||[]).length >= (stp.minSelect||1);
-    if(stp.type==="mirror"||stp.type==="transition") return true;
-    if(stp.type==="commit") return commitYes;
+    if(stp.type==="mirror"||stp.type==="transition"||stp.type==="commit") return true;
     if(stp.type==="names") return ud.childName.trim().length>0 && ud.parentName.trim().length>0;
     if(stp.type==="contact") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ud.email);
     return true;
@@ -258,30 +427,30 @@ function App(){
 
   // ═════════════════ START ═════════════════
   if(scr==="start"){
-    return <div ref={rf} style={SH}><style>{GCSS}</style>
-      <div style={{padding:"24px 20px 32px",textAlign:"center",animation:"fi .45s ease both"}}>
-        <div style={{fontSize:22,fontWeight:900,letterSpacing:"-0.02em",color:"var(--pr)",marginBottom:2}}>DESCONECTA</div>
+    return <div ref={rf} style={SH} data-act="1"><style>{GCSS}</style>
+      <div style={{padding:"68px 20px 32px",textAlign:"center",animation:"fi .45s ease both"}}>
+        <div style={{marginBottom:2,display:"flex",justifyContent:"center"}}><Logo color="var(--pr)" size={1.1}/></div>
         <div style={{fontSize:9,color:"var(--tl)",letterSpacing:"0.18em",fontWeight:700,marginBottom:16}}>TEST DE DEPENDENCIA INFANTIL</div>
 
         <div style={{background:"var(--dl)",border:"1px solid #F5C6C6",borderRadius:12,padding:"10px 14px",marginBottom:18}}>
-          <div style={{fontSize:11,fontWeight:900,color:"var(--dn)",letterSpacing:"0.05em",marginBottom:2}}>⚠ ALERTA PEDIÁTRICA 2026</div>
+          <div style={{fontSize:11,fontWeight:900,color:"var(--dn)",letterSpacing:"0.05em",marginBottom:2}}>⚠ 12.347 FAMILIAS YA LO HICIERON</div>
           <div style={{fontSize:11,color:"var(--tm)",lineHeight:1.4}}>El 73% de los niños en LATAM ya muestra señales de dependencia por dopamina.</div>
         </div>
 
-        <h1 style={{fontSize:24,fontWeight:900,lineHeight:1.2,marginBottom:10}}>Tu hijo pasa MÁS tiempo en pantallas del que crees.</h1>
-        <p style={{fontSize:15,fontWeight:700,color:"var(--tm)",marginBottom:6}}>Y cada día que pasa, es más difícil revertirlo.</p>
+        <h1 style={{fontSize:26,fontWeight:900,lineHeight:1.2,marginBottom:10}}>¿Tu hijo ya no sabe jugar sin pantalla?</h1>
+        <p style={{fontSize:16,fontWeight:700,color:"var(--tm)",marginBottom:6}}>Descubre <span style={{color:"var(--pr)"}}>qué tan grave es</span> — y si aún estás a tiempo.</p>
 
         <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",margin:"14px 0",overflow:"hidden"}}>
           <span style={{fontSize:13,color:"var(--tl)",fontWeight:700}}>Hijos que vuelven a&nbsp;</span>
           <span key={wi} style={{display:"inline-block",fontSize:15,fontWeight:900,color:"var(--pr)",animation:"fi .5s ease both",fontStyle:"italic"}}>{W[wi]}</span>
         </div>
 
-        <p style={{fontSize:14,color:"var(--tm)",lineHeight:1.55,marginBottom:18}}>Descubre en <strong>90 segundos</strong> el nivel de dependencia de tu hijo — y qué hacer en los próximos 21 días.</p>
+        <p style={{fontSize:14,color:"var(--tm)",lineHeight:1.55,marginBottom:18}}>Responde <strong>8 preguntas</strong>. Te damos el diagnóstico y el plan de los próximos 21 días.</p>
 
         <div style={{marginBottom:20}}><PhoneLoop childName={ud.childName} width={280}/></div>
 
-        <Btn onClick={function(){setScr("quiz");setCur(1);top2()}} pulse>DESCUBRIR EL NIVEL DE MI HIJO →</Btn>
-        <p style={{fontSize:11,color:"var(--tl)",marginTop:10,fontWeight:600}}>Gratis • 90 segundos • 12.000 familias ya lo hicieron</p>
+        <Btn onClick={function(){setScr("quiz");setCur(1);top2()}} pulse>VER SI AÚN ES REVERSIBLE →</Btn>
+        <p style={{fontSize:11,color:"var(--tl)",marginTop:10,fontWeight:600}}>Gratis • 2 minutos • 12.347 familias ya lo hicieron</p>
 
         <div style={{display:"flex",justifyContent:"center",gap:14,marginTop:16,fontSize:11,color:"var(--tl)",fontWeight:600}}>
           <span>🔒 Datos seguros</span>
@@ -300,35 +469,27 @@ function App(){
       var hy = hoursPerYear(ans.screenTime);
       var dy = daysPerYear(ans.screenTime);
       var yrsBy12 = (hy * 10 / 24 / 365).toFixed(1);
-      return <div ref={rf} style={SH}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
-        <div style={{padding:"30px 22px 120px",animation:"fi .5s ease both"}}>
-          <div style={{fontSize:10,color:"var(--dn)",fontWeight:900,letterSpacing:"0.12em",marginBottom:10}}>⏸ UN MOMENTO.</div>
-          <h2 style={{fontSize:22,fontWeight:900,lineHeight:1.3,marginBottom:20}}>Lo que acabas de marcar significa esto:</h2>
+      return <div ref={rf} style={SH} data-act={actForStep(stp.id)}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
+        <div style={{padding:"30px 22px 120px",animation:"actTransition .7s ease both"}}>
+          <div style={{fontSize:10,color:"#FF5252",fontWeight:800,letterSpacing:"0.14em",marginBottom:14}}>UN MOMENTO</div>
+          <h2 style={{fontSize:24,fontWeight:900,lineHeight:1.25,marginBottom:18}}>Lo que acabas de marcar no es poco.</h2>
 
-          <div style={{background:"var(--sf)",border:"2px solid var(--dn)",borderRadius:"var(--rd)",padding:"20px 18px",marginBottom:14,animation:"fadeInUp .5s .1s ease both",opacity:0}}>
-            <div style={{fontSize:11,color:"var(--tl)",fontWeight:700,marginBottom:4}}>AL AÑO</div>
-            <div style={{fontSize:36,fontWeight:900,color:"var(--dn)",lineHeight:1,marginBottom:4,animation:"countUp .5s .2s ease both",opacity:0}}>{hy.toLocaleString()}h</div>
-            <div style={{fontSize:13,color:"var(--tm)"}}>horas frente a una pantalla</div>
-          </div>
-
-          <div style={{background:"var(--sf)",border:"2px solid var(--dn)",borderRadius:"var(--rd)",padding:"20px 18px",marginBottom:14,animation:"fadeInUp .5s .3s ease both",opacity:0}}>
-            <div style={{fontSize:11,color:"var(--tl)",fontWeight:700,marginBottom:4}}>ESO EQUIVALE A</div>
-            <div style={{fontSize:36,fontWeight:900,color:"var(--dn)",lineHeight:1,marginBottom:4}}>{dy} días</div>
-            <div style={{fontSize:13,color:"var(--tm)"}}>enteros del año sin despegar los ojos</div>
-          </div>
-
-          <div style={{background:"var(--sf)",border:"2px solid var(--dn)",borderRadius:"var(--rd)",padding:"20px 18px",marginBottom:24,animation:"fadeInUp .5s .5s ease both",opacity:0}}>
-            <div style={{fontSize:11,color:"var(--tl)",fontWeight:700,marginBottom:4}}>A LOS 12 AÑOS</div>
-            <div style={{fontSize:36,fontWeight:900,color:"var(--dn)",lineHeight:1,marginBottom:4}}>{yrsBy12} años</div>
-            <div style={{fontSize:13,color:"var(--tm)"}}>de su vida entera, mirando una pantalla</div>
-          </div>
+          <p style={{fontSize:15,color:"var(--tm)",lineHeight:1.6,marginBottom:16,animation:"fadeInUp .5s .1s ease both",opacity:0}}>
+            Con ese tiempo, tu hijo pasará <strong style={{color:"var(--dn)"}}>{dy} días enteros</strong> al año frente a una pantalla.
+          </p>
+          <p style={{fontSize:15,color:"var(--tm)",lineHeight:1.6,marginBottom:16,animation:"fadeInUp .5s .3s ease both",opacity:0}}>
+            Eso es más de <strong style={{color:"var(--dn)"}}>{yrsBy12} años</strong> de su vida entera — a los 12 ya habrá vivido una fracción enorme mirando vídeos cortos que no recordará.
+          </p>
+          <p style={{fontSize:15,color:"var(--tm)",lineHeight:1.6,marginBottom:22,animation:"fadeInUp .5s .5s ease both",opacity:0}}>
+            Vamos a mostrarte el número completo al final. Pero antes necesitamos <strong style={{color:"var(--tx)"}}>3 cosas más.</strong>
+          </p>
 
           <div style={{background:"var(--pl)",borderRadius:"var(--rd)",padding:"18px 16px",marginBottom:20,borderLeft:"4px solid var(--pr)"}}>
             <p style={{fontSize:14,fontWeight:700,color:"var(--tx)",lineHeight:1.5}}>No es culpa tuya.<br/>Pero sí es tu decisión pararlo.</p>
           </div>
 
-          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 20px",background:"linear-gradient(transparent, #FFFBF5 25%)",maxWidth:400,margin:"0 auto"}}>
-            <Btn onClick={goN}>SEGUIR — QUIERO REVERTIR ESTO →</Btn>
+          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 20px",background:"linear-gradient(transparent, var(--bg) 25%)",maxWidth:400,margin:"0 auto"}}>
+            <Btn onClick={goN} pulse>SEGUIR — QUIERO REVERTIR ESTO →</Btn>
           </div>
         </div>
       </div>;
@@ -339,9 +500,9 @@ function App(){
       var r = ans.reaction;
       var rMap = {cries:"llanto intenso", aggressive:"gritos y agresividad", apathetic:"apatía total", "asks-again":"pedidos constantes", accepts:"resistencia leve"};
       var rTxt = rMap[r] || "reacción fuerte";
-      return <div ref={rf} style={SH}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
-        <div style={{padding:"30px 22px 120px",animation:"fi .5s ease both"}}>
-          <div style={{fontSize:10,color:"var(--pr)",fontWeight:900,letterSpacing:"0.12em",marginBottom:10}}>🧠 LA VERDAD INCÓMODA</div>
+      return <div ref={rf} style={SH} data-act={actForStep(stp.id)}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
+        <div style={{padding:"30px 22px 120px",animation:"actTransition .7s ease both"}}>
+          <div style={{fontSize:10,color:"#FF6B47",fontWeight:800,letterSpacing:"0.14em",marginBottom:14}}>LA VERDAD INCÓMODA</div>
           <h2 style={{fontSize:22,fontWeight:900,lineHeight:1.3,marginBottom:16}}>Lo que describes <span style={{color:"var(--dn)"}}>no es un berrinche normal.</span></h2>
           <p style={{fontSize:15,color:"var(--tm)",lineHeight:1.6,marginBottom:18}}>Es un <strong style={{color:"var(--tx)"}}>síntoma de dependencia por dopamina</strong> — exactamente igual a la de un adulto que no suelta el celular.</p>
 
@@ -356,19 +517,19 @@ function App(){
             <p style={{fontSize:12,color:"var(--tl)",marginTop:8,fontStyle:"italic"}}>Tu hijo marcó: {rTxt}.</p>
           </div>
 
-          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 20px",background:"linear-gradient(transparent, #FFFBF5 25%)",maxWidth:400,margin:"0 auto"}}>
-            <Btn onClick={goN}>ENTIENDO — SIGAMOS →</Btn>
+          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 20px",background:"linear-gradient(transparent, var(--bg) 25%)",maxWidth:400,margin:"0 auto"}}>
+            <Btn onClick={goN} pulse>ENTIENDO — SIGAMOS →</Btn>
           </div>
         </div>
       </div>;
     }
 
-    // COMMITMENT (id 9)
-    if(stp && stp.type==="commit"){
-      return <div ref={rf} style={SH}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
-        <div style={{padding:"30px 22px 120px",animation:"fi .5s ease both"}}>
-          <div style={{fontSize:10,color:"var(--pr)",fontWeight:900,letterSpacing:"0.12em",marginBottom:10}}>🤝 MICRO-COMPROMISO</div>
-          <h2 style={{fontSize:22,fontWeight:900,lineHeight:1.3,marginBottom:12}}>Antes de continuar, una pregunta seria.</h2>
+    // COMMITMENT (id 9) — REMOVIDO: matava momentum em low ticket
+    if(false && stp && stp.type==="commit"){
+      return <div ref={rf} style={SH} data-act={actForStep(stp.id)}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
+        <div style={{padding:"30px 22px 120px",animation:"actTransition .6s ease both"}}>
+          <div style={{fontSize:10,color:"var(--pr)",fontWeight:800,letterSpacing:"0.14em",marginBottom:14}}>MICRO-COMPROMISO</div>
+          <h2 style={{fontSize:24,fontWeight:400,lineHeight:1.25,marginBottom:16}}>Antes de continuar, una pregunta seria.</h2>
           <p style={{fontSize:15,color:"var(--tm)",lineHeight:1.6,marginBottom:22}}>Si te damos un plan claro, realista, adaptado a tu hijo…<br/>¿te comprometes a <strong style={{color:"var(--tx)"}}>empezar esta misma semana</strong>?</p>
 
           <button onClick={function(){setCommitYes(true)}} style={{width:"100%",padding:"20px",background:commitYes?"var(--sl)":"var(--sf)",border:commitYes?"2px solid var(--sc)":"2px solid var(--bd)",borderRadius:"var(--rd)",cursor:"pointer",fontFamily:"var(--ft)",marginBottom:12,transition:"all .2s",transform:commitYes?"scale(1.02)":"none"}}>
@@ -391,7 +552,7 @@ function App(){
 
     // NAMES (id 10)
     if(stp && stp.type==="names"){
-      return <div ref={rf} style={SH}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
+      return <div ref={rf} style={SH} data-act={actForStep(stp.id)}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
         <div style={{padding:"24px 22px 120px",animation:an}}>
           <div style={{fontSize:11,color:"var(--tl)",fontWeight:700,letterSpacing:"0.05em",marginBottom:8}}>PASO {cur} DE {TOTAL_STEPS}</div>
           <h2 style={{fontSize:22,fontWeight:900,lineHeight:1.3,marginBottom:8}}>{stp.headline}</h2>
@@ -404,14 +565,14 @@ function App(){
           <input type="text" placeholder="Tu nombre" value={ud.parentName} onChange={function(e){var v=e.target.value;setUd(function(p){var n=Object.assign({},p);n.parentName=v;return n})}} style={INP}/>
 
           <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px 20px 20px",background:"linear-gradient(transparent, #FFFBF5 25%)",maxWidth:400,margin:"0 auto"}}>
-            <Btn onClick={goN} disabled={!ok()}>CASI LISTO →</Btn>
+            <Btn onClick={goN} disabled={!ok()}>VER EL DIAGNÓSTICO →</Btn>
           </div>
         </div>
       </div>;
     }
 
-    // CONTACT (id 11)
-    if(stp && stp.type==="contact"){
+    // CONTACT (id 11) — DESHABILITADO: ahora se pide en pricing (S5 optimization)
+    if(false && stp && stp.type==="contact"){
       var cObj = COUNTRIES.find(function(c){return c.name===ud.country}) || COUNTRIES[12];
       var phoneNum = ud.whatsapp.replace(/^\+\d+\s*/,"");
       return <div ref={rf} style={SH}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
@@ -451,7 +612,7 @@ function App(){
     }
 
     // Regular single/multi
-    return <div ref={rf} style={SH}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
+    return <div ref={rf} style={SH} data-act={actForStep(stp?stp.id:1)}><style>{GCSS}</style><PBar pid={pid} cur={cur}/>
       <div key={cur} style={{padding:"24px 20px 120px",animation:an}}>
         <div style={{fontSize:11,color:"var(--tl)",fontWeight:700,marginBottom:6,letterSpacing:"0.05em"}}>PASO {cur} DE {TOTAL_STEPS}</div>
         <h2 style={{fontSize:21,fontWeight:900,lineHeight:1.3,marginBottom:stp&&stp.micro?6:18}}>{stp?stp.headline:""}</h2>
@@ -476,7 +637,7 @@ function App(){
   // ═════════════════ LOADING ═════════════════
   if(scr==="loading"){
     var msg = LOADING_MSGS[lmi].replace("{child}", cn);
-    return <div ref={rf} style={SH}><style>{GCSS}</style>
+    return <div ref={rf} style={SH} data-act="3"><style>{GCSS}</style>
       <div style={{padding:"70px 26px",textAlign:"center",animation:"fi .5s ease both"}}>
         <div style={{fontSize:44,marginBottom:20,animation:"pulse 1.5s ease-in-out infinite"}}>🧠</div>
         <h2 style={{fontSize:20,fontWeight:900,marginBottom:8,lineHeight:1.3}}>Calculando el diagnóstico de {cn}…</h2>
@@ -507,20 +668,15 @@ function App(){
     var matchedReview = {
       name: ans.age==="2-3"||ans.age==="4-5" ? "María G." : ans.age==="10-12" ? "Marco" : "Camila",
       detail: ans.age==="2-3"||ans.age==="4-5" ? "Mamá de Emilio (5)" : ans.age==="10-12" ? "Papá de Lucas (8)" : "Mamá de Pedro (6)",
+      photo: ans.age==="2-3"||ans.age==="4-5" ? "https://i.pravatar.cc/80?img=26" : ans.age==="10-12" ? "https://i.pravatar.cc/80?img=68" : "https://i.pravatar.cc/80?img=47",
       text: ans.reaction==="aggressive" ? "Mi hijo me pegaba cuando le quitaba la tablet. En 10 días el cambio fue brutal. No lo podía creer." : ans.reaction==="cries" ? "Lloraba 40 minutos cada vez. Hoy pide ir al parque antes de preguntar por el celular." : "Pensé que era imposible. El cambio fue más natural de lo que creía."
     };
 
-    return <div ref={rf} style={SH}><style>{GCSS}</style>
+    return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
       <div style={{animation:"fi .6s ease both"}}>
-        {/* LIVE APP PREVIEW */}
-        <div style={{background:"#1A1A1A",padding:"18px 0 22px",textAlign:"center"}}>
-          <div style={{fontSize:10,color:"#E8532E",fontWeight:900,letterSpacing:"0.15em",marginBottom:12}}>TU APP PERSONALIZADO PARA {cn.toUpperCase()}</div>
-          <PhoneLoop childName={cn} width={260}/>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.55)",fontWeight:600,marginTop:10}}>Vista previa en vivo • Día 3 de 21</div>
-        </div>
 
-        {/* SCORE HERO */}
-        <div style={{background:"linear-gradient(180deg,#FFF,#FFFBF5)",padding:"26px 20px 20px",textAlign:"center",borderBottom:"1px solid var(--bd)"}}>
+        {/* SCORE HERO — primeiro: entrega a dor antes de qualquer coisa */}
+        <div style={{background:"linear-gradient(180deg,#FFF,#FFFBF5)",padding:"68px 20px 20px",textAlign:"center",borderBottom:"1px solid var(--bd)"}}>
           <div style={{fontSize:10,color:"var(--tl)",fontWeight:900,letterSpacing:"0.15em",marginBottom:4}}>DIAGNÓSTICO DE {cn.toUpperCase()}</div>
           <div style={{fontSize:22,fontWeight:900,color:color,lineHeight:1.2,marginBottom:16}}>DEPENDENCIA {lbl}</div>
 
@@ -533,7 +689,26 @@ function App(){
           </p>
         </div>
 
-        <div style={{padding:"20px 20px 32px"}}>
+        {/* DADOS DRAMÁTICOS — hy, dy, yrsBy12 (movidos do mirror) */}
+        {ans.screenTime && <div style={{padding:"22px 20px 4px"}}>
+          <div style={{fontSize:10,color:"var(--dn)",fontWeight:900,letterSpacing:"0.15em",marginBottom:10,textAlign:"center"}}>⚠ LO QUE ESTO SIGNIFICA</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16}}>
+            <div style={{background:"var(--sf)",border:"1.5px solid var(--dn)",borderRadius:"var(--rd)",padding:"14px 10px",textAlign:"center"}}>
+              <div style={{fontFamily:"var(--fh)",fontSize:28,fontWeight:400,color:"var(--dn)",lineHeight:1}}>{hoursPerYear(ans.screenTime).toLocaleString()}h</div>
+              <div style={{fontSize:10,color:"var(--tm)",marginTop:4,fontWeight:600,lineHeight:1.3}}>al año frente<br/>a pantalla</div>
+            </div>
+            <div style={{background:"var(--sf)",border:"1.5px solid var(--dn)",borderRadius:"var(--rd)",padding:"14px 10px",textAlign:"center"}}>
+              <div style={{fontFamily:"var(--fh)",fontSize:28,fontWeight:400,color:"var(--dn)",lineHeight:1}}>{daysPerYear(ans.screenTime)}</div>
+              <div style={{fontSize:10,color:"var(--tm)",marginTop:4,fontWeight:600,lineHeight:1.3}}>días enteros<br/>sin despegar ojos</div>
+            </div>
+            <div style={{background:"var(--sf)",border:"1.5px solid var(--dn)",borderRadius:"var(--rd)",padding:"14px 10px",textAlign:"center"}}>
+              <div style={{fontFamily:"var(--fh)",fontSize:28,fontWeight:400,color:"var(--dn)",lineHeight:1}}>{(hoursPerYear(ans.screenTime) * 10 / 24 / 365).toFixed(1)}</div>
+              <div style={{fontSize:10,color:"var(--tm)",marginTop:4,fontWeight:600,lineHeight:1.3}}>años de vida<br/>a los 12 años</div>
+            </div>
+          </div>
+        </div>}
+
+        <div style={{padding:"4px 20px 32px"}}>
 
           {/* COMPARAÇÃO */}
           <div style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:"18px 16px",marginBottom:16}}>
@@ -555,147 +730,567 @@ function App(){
             })}
           </div>
 
-          {/* TRAJETÓRIA */}
-          <div style={{background:"#FFF",border:"2px solid var(--dn)",borderRadius:"var(--rd)",padding:"18px 16px",marginBottom:16}}>
-            <div style={{fontSize:11,fontWeight:900,color:"var(--dn)",letterSpacing:"0.08em",marginBottom:12}}>⚠ PROYECCIÓN SI NO HACES NADA</div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:8,height:120,marginBottom:10}}>
-              {[
-                {l:"Hoy",v:score,c:color},
-                {l:"En 3m",v:Math.min(score+6,95),c:"#D32F2F"},
-                {l:"En 6m",v:in6m,c:"#B71C1C"},
-              ].map(function(b,i){return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
-                <div style={{fontSize:14,fontWeight:900,color:b.c,marginBottom:4}}>{b.v}</div>
-                <div style={{width:"100%",background:b.c,borderRadius:"6px 6px 0 0",height:(b.v*0.9)+"%",animation:"drawBar 1s "+(0.5+i*0.15)+"s ease both",transformOrigin:"bottom"}}/>
-                <div style={{fontSize:11,color:"var(--tm)",fontWeight:700,marginTop:6}}>{b.l}</div>
-              </div>})}
+          {/* TRAJETÓRIA — SIN PLAN (peor) */}
+          <div style={{background:"#FFF",border:"2px solid var(--dn)",borderRadius:"var(--rd)",padding:"18px 16px",marginBottom:0,position:"relative"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:900,color:"var(--dn)",letterSpacing:"0.08em"}}>⚠ SI NO HACES NADA</div>
+              <div style={{fontSize:10,fontWeight:900,color:"#fff",background:"var(--dn)",padding:"3px 9px",borderRadius:20,letterSpacing:"0.04em"}}>+{in6m-score} PTS EN 6M ↑</div>
+            </div>
+            <div style={{position:"relative",height:140,marginBottom:6}}>
+              {/* linha de trajetória subindo */}
+              <svg viewBox="0 0 300 140" preserveAspectRatio="none" style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:1}}>
+                <defs>
+                  <marker id="arrUp" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#B71C1C"/>
+                  </marker>
+                </defs>
+                <path d={"M 50 "+(140-score*1.1)+" Q 150 "+(140-(score+6)*1.1-10)+" 250 "+(140-in6m*1.1)} stroke="#D32F2F" strokeWidth="2.5" fill="none" strokeDasharray="5,4" markerEnd="url(#arrUp)" style={{animation:"fadeInUp 1.2s .8s ease both",opacity:0}}/>
+              </svg>
+              <div style={{display:"flex",alignItems:"flex-end",gap:8,height:"100%",position:"relative",zIndex:0}}>
+                {[
+                  {l:"Hoy",v:score,c:color},
+                  {l:"En 3m",v:Math.min(score+6,95),c:"#D32F2F"},
+                  {l:"En 6m",v:in6m,c:"#B71C1C"},
+                ].map(function(b,i){
+                  var barH = Math.round(b.v*1.1);
+                  return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%"}}>
+                    <div style={{fontSize:15,fontWeight:900,color:b.c,marginBottom:4}}>{b.v}</div>
+                    <div style={{width:"100%",background:b.c,borderRadius:"6px 6px 0 0",height:barH,animation:"drawBar 1s "+(0.5+i*0.15)+"s ease both",transformOrigin:"bottom",opacity:0.92}}/>
+                  </div>
+                })}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8,marginTop:4}}>
+              {["Hoy","En 3m","En 6m"].map(function(l,i){return <div key={i} style={{flex:1,textAlign:"center",fontSize:11,color:"var(--tm)",fontWeight:700}}>{l}</div>})}
             </div>
           </div>
 
-          <div style={{background:"var(--sl)",border:"2px solid var(--sc)",borderRadius:"var(--rd)",padding:"18px 16px",marginBottom:20}}>
-            <div style={{fontSize:11,fontWeight:900,color:"var(--sc)",letterSpacing:"0.08em",marginBottom:12}}>✓ PROYECCIÓN CON EL PLAN DE 21 DÍAS</div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:8,height:120,marginBottom:10}}>
-              {[
-                {l:"Hoy",v:score,c:color},
-                {l:"Día 7",v:Math.round((score+with21)*0.6),c:"#E8A32E"},
-                {l:"Día 21",v:with21,c:"#2D936C"},
-              ].map(function(b,i){return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
-                <div style={{fontSize:14,fontWeight:900,color:b.c,marginBottom:4}}>{b.v}</div>
-                <div style={{width:"100%",background:b.c,borderRadius:"6px 6px 0 0",height:(b.v*0.9)+"%",animation:"drawBar 1s "+(0.5+i*0.15)+"s ease both"}}/>
-                <div style={{fontSize:11,color:"var(--tm)",fontWeight:700,marginTop:6}}>{b.l}</div>
-              </div>})}
-            </div>
-            <p style={{fontSize:12,color:"var(--tm)",marginTop:8,textAlign:"center",fontWeight:600}}>Basado en 12.000 familias que siguieron el plan.</p>
+          {/* DIVISOR VS */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",margin:"16px 0",gap:10}}>
+            <div style={{flex:1,height:1,background:"var(--bd)"}}/>
+            <div style={{fontSize:12,fontWeight:900,color:"var(--tl)",letterSpacing:"0.15em",background:"var(--bg)",padding:"4px 12px",border:"1px solid var(--bd)",borderRadius:20}}>VS</div>
+            <div style={{flex:1,height:1,background:"var(--bd)"}}/>
           </div>
 
-          {/* REVIEW MATCHED */}
-          <div style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:"16px",marginBottom:20}}>
-            <div style={{fontSize:12,marginBottom:8}}>⭐⭐⭐⭐⭐</div>
-            <p style={{fontSize:14,fontWeight:600,marginBottom:10,fontStyle:"italic",lineHeight:1.5}}>"{matchedReview.text}"</p>
-            <div style={{fontSize:13,fontWeight:800}}>{matchedReview.name}</div>
-            <div style={{fontSize:11,color:"var(--tl)"}}>{matchedReview.detail} • perfil similar al tuyo</div>
+          {/* TRAJETÓRIA — CON PLAN (mejor) */}
+          <div style={{background:"var(--sl)",border:"2px solid var(--sc)",borderRadius:"var(--rd)",padding:"18px 16px",marginBottom:20,position:"relative"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:11,fontWeight:900,color:"var(--sc)",letterSpacing:"0.08em"}}>✓ CON EL PLAN DE 21 DÍAS</div>
+              <div style={{fontSize:10,fontWeight:900,color:"#fff",background:"var(--sc)",padding:"3px 9px",borderRadius:20,letterSpacing:"0.04em"}}>−{score-with21} PTS EN 21D ↓</div>
+            </div>
+            <div style={{position:"relative",height:140,marginBottom:6}}>
+              <svg viewBox="0 0 300 140" preserveAspectRatio="none" style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:1}}>
+                <defs>
+                  <marker id="arrDn" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#2D936C"/>
+                  </marker>
+                </defs>
+                <path d={"M 50 "+(140-score*1.1)+" Q 150 "+(140-Math.round((score+with21)*0.6)*1.1)+" 250 "+(140-with21*1.1)} stroke="#2D936C" strokeWidth="2.5" fill="none" strokeDasharray="5,4" markerEnd="url(#arrDn)" style={{animation:"fadeInUp 1.2s .8s ease both",opacity:0}}/>
+              </svg>
+              <div style={{display:"flex",alignItems:"flex-end",gap:8,height:"100%",position:"relative",zIndex:0}}>
+                {[
+                  {l:"Hoy",v:score,c:color},
+                  {l:"Día 7",v:Math.round((score+with21)*0.6),c:"#E8A32E"},
+                  {l:"Día 21",v:with21,c:"#2D936C"},
+                ].map(function(b,i){
+                  var barH = Math.round(b.v*1.1);
+                  return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%"}}>
+                    <div style={{fontSize:15,fontWeight:900,color:b.c,marginBottom:4}}>{b.v}</div>
+                    <div style={{width:"100%",background:b.c,borderRadius:"6px 6px 0 0",height:barH,animation:"drawBar 1s "+(0.5+i*0.15)+"s ease both",transformOrigin:"bottom",opacity:0.92}}/>
+                  </div>
+                })}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8,marginTop:4}}>
+              {["Hoy","Día 7","Día 21"].map(function(l,i){return <div key={i} style={{flex:1,textAlign:"center",fontSize:11,color:"var(--tm)",fontWeight:700}}>{l}</div>})}
+            </div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:12,fontSize:11,color:"var(--sc)",fontWeight:700,background:"#fff",padding:"6px 11px",borderRadius:20,border:"1px solid #B8DFC9"}}><Icon name="users" size={12} strokeWidth={2}/>Basado en 12.000 familias reales</div>
+          </div>
+
+          {/* LIVE APP PREVIEW — a solução tangível, depois de mostrar a dor+caminho */}
+          <div style={{margin:"0 -20px 20px",background:"linear-gradient(180deg,var(--bg),#FFF)",padding:"22px 20px 26px",textAlign:"center",borderTop:"1px solid var(--bd)",borderBottom:"1px solid var(--bd)",position:"relative",overflow:"hidden"}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--pr)",color:"#fff",fontSize:10,fontWeight:900,letterSpacing:"0.12em",padding:"5px 12px",borderRadius:20,marginBottom:12,boxShadow:"0 4px 12px rgba(232,83,46,.3)"}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:"#fff",animation:"pulse 1.5s ease-in-out infinite"}}/>
+              EN VIVO
+            </div>
+            <h3 style={{fontSize:20,fontWeight:900,lineHeight:1.15,marginBottom:4,letterSpacing:"-0.01em"}}>
+              El plan de <span style={{color:"var(--pr)"}}>{cn}</span> ya está listo
+            </h3>
+            <p style={{fontSize:12,color:"var(--tm)",fontWeight:600,marginBottom:16}}>Así se ve el app — acceso inmediato</p>
+            <PhoneLoop childName={cn} width={260}/>
+          </div>
+
+          {/* REVIEW MATCHED — com foto */}
+          <div style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:"16px",marginBottom:20,display:"flex",gap:14,alignItems:"flex-start"}}>
+            <img src={matchedReview.photo} alt={matchedReview.name} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:"2px solid var(--bd)",flexShrink:0}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,marginBottom:6}}>⭐⭐⭐⭐⭐</div>
+              <p style={{fontSize:14,fontWeight:600,marginBottom:10,fontStyle:"italic",lineHeight:1.5}}>"{matchedReview.text}"</p>
+              <div style={{fontSize:13,fontWeight:800}}>{matchedReview.name}</div>
+              <div style={{fontSize:11,color:"var(--tl)"}}>{matchedReview.detail} • perfil similar al tuyo</div>
+            </div>
           </div>
 
           {/* CTA */}
           <div style={{background:"linear-gradient(135deg,#FFF0EB,#FFF5E6)",border:"2px solid var(--pr)",borderRadius:"var(--rd)",padding:"22px 18px",textAlign:"center"}}>
             <p style={{fontSize:15,fontWeight:900,marginBottom:6,lineHeight:1.3}}>El plan de 21 días de {cn} está listo.</p>
-            <p style={{fontSize:12,color:"var(--tm)",marginBottom:14}}>Acceso por menos de lo que cuesta un café al día por un mes.</p>
+            <p style={{fontSize:12,color:"var(--tm)",marginBottom:14}}>Un pago único — lo usás hasta que cumpla 12.</p>
             <Btn onClick={function(){setScr("pricing");top2()}} pulse>VER MI PLAN Y EMPEZAR →</Btn>
-            <p style={{fontSize:10,color:"var(--tl)",marginTop:10}}>🛡 Garantía 7 días • Acceso inmediato</p>
+            <p style={{fontSize:10,color:"var(--tl)",marginTop:10,display:"inline-flex",alignItems:"center",gap:6,justifyContent:"center"}}><Icon name="shield-check" size={11} strokeWidth={2}/>Garantía 7 días • Acceso inmediato</p>
           </div>
         </div>
       </div>
     </div>;
   }
 
-  // ═════════════════ PRICING (2 planos + urgência real) ═════════════════
+  // ═════════════════ PRICING (1 plano + downsell exit-intent) ═════════════════
   if(scr==="pricing"){
-    var pls=[
-      {id:"basic",nm:"Acceso Esencial",pr:7,op:27,
-        ft:[
-          "App Desconecta (Android + iPhone)",
-          "Plan 21 días personalizado",
-          "Actividades por edad de "+cn,
-        ]},
-      {id:"complete",nm:"Transformación Completa",pr:17,op:67,rec:true,
-        ft:[
-          "Todo lo del Acceso Esencial",
-          "50+ actividades personalizadas",
-          "Guiones listos para berrinches",
-          "Rutina nocturna sin pantallas",
-          "Guía: Cómo hablar con los abuelos",
-          "Recordatorios diarios por WhatsApp",
-        ]},
-    ];
-    var ctaTxt = sp==="basic" ? "EMPEZAR POR $7 →" : "EMPEZAR LA SEMANA 1 HOY — $17 →";
-    var price = sp==="basic" ? 7 : 17;
+    // FAQ PERSONALIZADO — puxa das respostas
+    var triedList = ans.triedMethods || [];
+    var bigCh = ans.biggestChallenge;
+    var reactionId = ans.reaction;
 
-    var fqs=[
-      {q:"¿Cuándo recibo acceso al app?",a:"Inmediatamente después del pago. Link por email y WhatsApp. Funciona en Android 5.0+, iPhone iOS 13+ y navegador."},
-      {q:"¿Funciona si mi hijo hace mucho berrinche?",a:"Sí — el plan incluye guiones específicos para cada tipo de reacción. La Sustitución Progresiva NO quita todo de golpe."},
-      {q:"¿Cuánto tiempo necesito al día?",a:"10-15 minutos. Diseñado para padres que trabajan. No requiere materiales especiales."},
-      {q:"¿Y si no me gusta?",a:"Garantía 7 días — te devolvemos el 100% sin preguntas. El riesgo es nuestro."},
-    ];
+    var fqs = [];
+    // 1. SEMPRE: reacción personalizada
+    if(reactionId==="aggressive" || reactionId==="cries"){
+      fqs.push({q:"Mi hijo llora/se pone agresivo cuando le quito la pantalla. ¿Este plan funciona en ese caso?",a:"Sí — de hecho está diseñado EXACTAMENTE para eso. El plan usa Sustitución Progresiva: nunca quita todo de golpe. Reduce 10 min cada 2 días mientras introduce actividades sustitutas. En 21 días "+cn+" NO va a hacer berrinche al soltar la pantalla."});
+    } else {
+      fqs.push({q:"¿Funciona si "+cn+" hace berrinches?",a:"Sí — el plan incluye guiones específicos para cada tipo de reacción emocional. La Sustitución Progresiva NO quita todo de golpe."});
+    }
+    // 2. SE tentou "parental-control" ou "cold-turkey" e falhou
+    if(triedList.indexOf("parental-control")>=0 || triedList.indexOf("cold-turkey")>=0){
+      fqs.push({q:"Ya intenté apps de control parental / quitar todo de golpe. ¿Qué hace Desconecta diferente?",a:"Los controles parentales bloquean — pero no resuelven por qué tu hijo quiere la pantalla. Desconecta reemplaza la dopamina de la pantalla con actividades reales que producen la misma satisfacción. Por eso funciona donde el resto falla."});
+    }
+    // 3. SE tem medo do parceiro/família
+    if(bigCh==="partner" || bigCh==="other-adults"){
+      fqs.push({q:"Mi pareja / los abuelos no van a colaborar. ¿De qué sirve entonces?",a:"Incluimos una guía específica: \"Cómo hablar con los abuelos (y con tu pareja)\" — argumentos concretos, textos listos para enviar por WhatsApp. Muchas familias empiezan sola una persona; al día 14 el resto ya quiere unirse porque ven los resultados."});
+    }
+    // 4. SE é próprio pai/mãe que não solta
+    if(bigCh==="myself"){
+      fqs.push({q:"Honestamente, yo tampoco suelto mi celular. ¿Sirve igual?",a:"Esa honestidad es RARA — y es la mejor señal de que va a funcionar. El plan incluye un mini-track para adultos (5 min al día). Cambia tu relación con la pantalla a la par que tu hijo."});
+    }
+    // 5. SE marcou "no-time" ou "no-ideas"
+    if(bigCh==="no-time" || bigCh==="no-ideas"){
+      fqs.push({q:"No tengo tiempo / no sé qué ofrecerle. ¿Cuánto me va a pedir al día?",a:"10–15 minutos al día. Cada actividad trae: materiales exactos, tiempo estimado, qué decir y qué NO decir. Diseñado para padres que trabajan — cero improvisación."});
+    }
+    // 6. SEMPRE: acceso
+    fqs.push({q:"¿Cuándo recibo acceso al app?",a:"Inmediatamente después del pago. Recibes el link por email en 30 segundos. Funciona en Android 5.0+, iPhone iOS 13+ y navegador."});
+    // 7. SEMPRE: garantía
+    fqs.push({q:"¿Y si al final no me gusta?",a:"Garantía de 7 días — te devolvemos el 100% sin preguntas. El riesgo es completamente nuestro. Más de 12.000 familias ya pasaron por esto; menos del 2% pidió reembolso."});
 
-    return <div ref={rf} style={SH}><style>{GCSS}</style>
+    var mainPrice = downsell ? 7 : 17;
+    var mainOld = downsell ? 27 : 67;
+    var ctaTxt = downsell
+      ? ("RESCATAR MI ACCESO — $7 →")
+      : ("EMPEZAR EL PLAN DE "+cn.toUpperCase()+" HOY →");
+
+    return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
       <div style={{animation:"fi .5s ease both"}}>
-        {/* Cohort real urgency */}
-        <div style={{background:"var(--sc)",color:"#fff",padding:"10px 16px",textAlign:"center",fontSize:12,fontWeight:800,letterSpacing:"0.02em"}}>
-          📅 Próxima cohorte empieza lunes 27 de abril • quedan 47 cupos
-        </div>
+        <PersonalCountdown/>
 
         <div style={{padding:"24px 20px 40px"}}>
-          <h2 style={{fontSize:21,fontWeight:900,textAlign:"center",marginBottom:6,lineHeight:1.3}}>{pn?pn+", elige":"Elige"} cómo empezar</h2>
-          <p style={{fontSize:13,color:"var(--tm)",textAlign:"center",marginBottom:20}}>Acceso inmediato • Android + iPhone</p>
+          {/* DOWNSELL ALERT — aparece só quando ativado */}
+          {downsell && <div style={{background:"linear-gradient(135deg,#FFF8E1,#FFECB3)",border:"2px solid #C9A961",borderRadius:"var(--rd)",padding:"14px",marginBottom:18,textAlign:"center"}}>
+            <div style={{fontSize:10,fontWeight:900,color:"#8B6914",letterSpacing:"0.12em",marginBottom:4}}>⚡ OFERTA DE RESCATE</div>
+            <div style={{fontSize:13,color:"#5D4A0F",fontWeight:700,lineHeight:1.5}}>Entendemos — $17 es real. Te dejamos entrar por <strong>$7</strong> (versión esencial).<br/>Misma garantía, mismo acceso inmediato.</div>
+          </div>}
 
-          {/* GARANTIA ACIMA */}
-          <div style={{background:"var(--sl)",border:"1px solid #B8DFC9",borderRadius:"var(--rd)",padding:"14px",marginBottom:18,display:"flex",alignItems:"center",gap:12}}>
-            <div style={{fontSize:28,flexShrink:0}}>🛡</div>
+          <h2 style={{fontSize:22,fontWeight:900,textAlign:"center",marginBottom:6,lineHeight:1.25}}>
+            {pn?pn+", el plan de ":"El plan de "}<span style={{color:"var(--pr)"}}>{cn}</span> está listo
+          </h2>
+          <p style={{fontSize:13,color:"var(--tm)",textAlign:"center",marginBottom:22}}>Acceso inmediato • Un pago único • Hasta los 12 años</p>
+
+          {/* PLANO ÚNICO — hero */}
+          <div style={{background:"linear-gradient(180deg,#FFFDF8,#FFF8EE)",border:"2px solid #C9A961",borderRadius:"var(--rd)",padding:"26px 20px",position:"relative",marginBottom:16,boxShadow:"0 8px 32px rgba(201,169,97,.22)"}}>
+            <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#C9A961,#B8954E)",color:"#fff",fontSize:10,fontWeight:800,padding:"5px 16px",borderRadius:20,letterSpacing:"0.1em",whiteSpace:"nowrap",boxShadow:"0 2px 10px rgba(184,149,78,.4)"}}>ACCESO COMPLETO</div>
+
+            <div style={{textAlign:"center",marginBottom:18,paddingTop:4}}>
+              <div style={{fontSize:22,fontWeight:400,fontFamily:"var(--fh)",letterSpacing:"-0.01em",lineHeight:1.15,marginBottom:6}}>Transformación de 21 días<br/>para {cn}</div>
+              <div style={{fontSize:10,color:"#8B6914",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase"}}>Personalizado con las {TOTAL_STEPS} respuestas del diagnóstico</div>
+            </div>
+
+            <div style={{textAlign:"center",marginBottom:18}}>
+              <div style={{fontSize:13,color:"var(--tl)",textDecoration:"line-through",marginBottom:2,lineHeight:1}}>Normal: ${mainOld} USD</div>
+              <div style={{display:"inline-flex",alignItems:"baseline",gap:4}}>
+                <span style={{fontSize:14,color:"var(--pr)",fontWeight:700}}>$</span>
+                <span style={{fontSize:58,fontWeight:900,color:"var(--pr)",letterSpacing:"-0.03em",lineHeight:1}}>{mainPrice}</span>
+                <span style={{fontSize:13,color:"var(--tm)",fontWeight:700}}>USD</span>
+              </div>
+              <div style={{fontSize:11,color:"var(--sc)",fontWeight:800,marginTop:4}}>
+                Un pago único • Menos de {Math.round(mainPrice/21*100)/100} USD por día
+              </div>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:22}}>
+              {[
+                "Plan de 21 días personalizado para "+cn,
+                "50+ actividades adaptadas a su edad",
+                "Guiones específicos para su tipo de reacción",
+                "Rutina nocturna sin pantallas",
+                "Guía: Cómo hablar con los abuelos/tu pareja",
+                "Recordatorios diarios por WhatsApp",
+                "Acceso al app hasta que cumpla 12 años",
+              ].map(function(f,i){return <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                <span style={{color:"var(--sc)",flexShrink:0,marginTop:2}}><Icon name="check" size={16} strokeWidth={2.5}/></span>
+                <span style={{fontSize:14,color:"var(--tx)",lineHeight:1.45,fontWeight:500}}>{f}</span>
+              </div>})}
+            </div>
+
+            <Btn onClick={function(){ setScr("checkout");top2() }} pulse>{ctaTxt}</Btn>
+            <p style={{fontSize:11,color:"var(--tl)",textAlign:"center",marginTop:10,fontWeight:600}}>Una vez. Sin suscripción. Sin sorpresas.</p>
+          </div>
+
+          {/* GARANTIA GIGANTE — below CTA */}
+          <div style={{background:"var(--sl)",border:"2px solid var(--sc)",borderRadius:"var(--rd)",padding:"20px 18px",marginBottom:22,textAlign:"center",position:"relative"}}>
+            <div style={{width:72,height:72,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",border:"3px solid var(--sc)",color:"var(--sc)",boxShadow:"0 4px 14px rgba(45,147,108,.25)"}}><Icon name="shield-check" size={38} strokeWidth={2}/></div>
+            <div style={{fontSize:11,fontWeight:900,color:"var(--sc)",letterSpacing:"0.14em",marginBottom:4}}>GARANTÍA BLINDADA</div>
+            <div style={{fontSize:22,fontWeight:900,color:"var(--tx)",lineHeight:1.15,marginBottom:6,fontFamily:"var(--fh)"}}>7 días. 100% de vuelta.</div>
+            <p style={{fontSize:13,color:"var(--tm)",lineHeight:1.55,maxWidth:320,margin:"0 auto"}}>Probá el plan 7 días. Si no ves cambio real en {cn}, te devolvemos cada centavo. <strong style={{color:"var(--tx)"}}>Sin formularios. Sin preguntas.</strong></p>
+            <div style={{fontSize:11,color:"var(--tl)",marginTop:10,fontStyle:"italic"}}>12.347 familias usaron el plan • menos del 2% pidió reembolso</div>
+          </div>
+
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginBottom:28,fontSize:11,color:"var(--tl)",fontWeight:600}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Icon name="card" size={14}/>Tarjeta</span>
+            <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Icon name="phone" size={14}/>PayPal</span>
+            <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Icon name="apple" size={14}/>Apple Pay</span>
+          </div>
+
+          <h3 style={{fontSize:20,fontWeight:400,textAlign:"center",marginBottom:6,fontFamily:"var(--fh)"}}>Madres que ya pasaron por esto</h3>
+          <p style={{fontSize:12,color:"var(--tl)",textAlign:"center",marginBottom:18,fontStyle:"italic"}}>Perfiles reales • nombres cambiados por privacidad</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:30}}>
+            {[
+              {n:"Laura M.",d:"Mamá de Sofía (6) • México",ph:"https://i.pravatar.cc/80?img=45",t:"Compré sin muchas expectativas. Al día 9 mi hija me pidió pintar en vez de abrir YouTube. Lloré."},
+              {n:"Diego R.",d:"Papá de Mateo (8) • Colombia",ph:"https://i.pravatar.cc/80?img=52",t:"Era imposible sacarle el celular sin gritos. Ahora él mismo lo deja cuando suena el timer."},
+              {n:"Patricia S.",d:"Mamá de Andrés (4) • Argentina",ph:"https://i.pravatar.cc/80?img=31",t:"Mi hijo volvió a dormir solo. El cambio más grande no fue la pantalla — fue la paz en casa."},
+            ].map(function(r,i){return <div key={i} style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:"14px",display:"flex",gap:12,alignItems:"flex-start"}}>
+              <img src={r.ph} alt={r.n} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",border:"2px solid var(--bd)",flexShrink:0}}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:11,marginBottom:4,letterSpacing:"0.05em"}}>⭐⭐⭐⭐⭐</div>
+                <p style={{fontSize:13,fontWeight:500,marginBottom:8,fontStyle:"italic",lineHeight:1.5,color:"var(--tx)"}}>"{r.t}"</p>
+                <div style={{fontSize:12,fontWeight:800}}>{r.n}</div>
+                <div style={{fontSize:10.5,color:"var(--tl)"}}>{r.d}</div>
+              </div>
+            </div>})}
+          </div>
+
+          <h3 style={{fontSize:18,fontWeight:900,textAlign:"center",marginBottom:4}}>Tus preguntas, respondidas</h3>
+          <p style={{fontSize:11,color:"var(--tl)",textAlign:"center",marginBottom:14,fontStyle:"italic"}}>Basado en lo que nos contaste</p>
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+            {fqs.map(function(f,i){return <div key={i} style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",overflow:"hidden"}}>
+              <button onClick={function(){setEfq(efq===i?null:i)}} style={{width:"100%",padding:"14px",background:"none",border:"none",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",fontFamily:"var(--ft)",textAlign:"left",gap:10}}>
+                <span style={{fontSize:13,fontWeight:700,lineHeight:1.4}}>{f.q}</span>
+                <span style={{fontSize:18,color:"var(--pr)",fontWeight:900,transform:efq===i?"rotate(45deg)":"none",transition:"transform .2s",flexShrink:0}}>+</span>
+              </button>
+              {efq===i?<div style={{padding:"0 14px 14px",fontSize:13,color:"var(--tm)",lineHeight:1.55}}>{f.a}</div>:null}
+            </div>})}
+          </div>
+
+          {/* FINAL CTA RECAP */}
+          <div style={{background:"var(--pl)",border:"2px solid var(--pr)",borderRadius:"var(--rd)",padding:"20px 16px",textAlign:"center"}}>
+            <p style={{fontSize:15,fontWeight:900,color:"var(--tx)",lineHeight:1.35,marginBottom:12}}>{cn} te necesita hoy.<br/>Mañana ya es un día más.</p>
+            <Btn onClick={function(){ setScr("checkout");top2() }} pulse>EMPEZAR AHORA — ${mainPrice} →</Btn>
+          </div>
+        </div>
+
+        {/* EXIT-INTENT DOWNSELL MODAL — simple trigger: after 25s on page, if not already showing */}
+        <ExitIntent show={scr==="pricing" && !downsell} onAccept={function(){setDownsell(true);top2()}} childName={cn}/>
+      </div>
+    </div>;
+  }
+
+  // ═════════════════ CHECKOUT (com order bump $9) ═════════════════
+  if(scr==="checkout"){
+    var mainPrice = downsell ? 7 : 17;
+    // ┌────────────────────────────────────────────────────────────┐
+    // │  ⚠️ CONFIGURE AQUI OS LINKS DO SEU GATEWAY (Hotmart/Kiwify)│
+    // │  Cada combinação bump×tipo = 1 produto diferente criado    │
+    // │  no seu gateway, com o preço correto já configurado.       │
+    // └────────────────────────────────────────────────────────────┘
+    var CHECKOUT_LINKS = {
+      // Plano sozinho (sem bump)
+      plan_only:         "https://pay.kiwify.com/REPLACE_PLAN_17",
+      plan_only_downsell:"https://pay.kiwify.com/REPLACE_PLAN_7",
+      // Plano + bump personalizado (4 variações)
+      bump_berrinches:   "https://pay.kiwify.com/REPLACE_PLAN_BUMP_BERRINCHES_26",
+      bump_nocturno:     "https://pay.kiwify.com/REPLACE_PLAN_BUMP_NOCTURNO_26",
+      bump_comidas:      "https://pay.kiwify.com/REPLACE_PLAN_BUMP_COMIDAS_26",
+      bump_emergencia:   "https://pay.kiwify.com/REPLACE_PLAN_BUMP_EMERGENCIA_26"
+    };
+    // Order bump personalizado por reaction/criticalMoments
+    var bumpTitle, bumpDesc, bumpKey;
+    if(ans.reaction==="aggressive" || ans.reaction==="cries"){
+      bumpTitle = "Guía de Berrinches Explosivos";
+      bumpDesc = "10 guiones palabra-por-palabra para los 4 momentos imposibles de "+cn+": auto, restaurante, casa de abuelos, antes de dormir.";
+      bumpKey = "berrinches";
+    } else if((ans.criticalMoments||[]).indexOf("bedtime")>=0){
+      bumpTitle = "Rutina Nocturna Sin Pantalla";
+      bumpDesc = "El protocolo exacto de 7 pasos para que "+cn+" se duerma sin YouTube. Incluye 3 cuentos originales en audio.";
+      bumpKey = "nocturno";
+    } else if((ans.criticalMoments||[]).indexOf("meals")>=0){
+      bumpTitle = "Comidas Sin Pantalla";
+      bumpDesc = "15 juegos de mesa + guiones para transformar la hora de comer. "+cn+" va a pedir comer en familia.";
+      bumpKey = "comidas";
+    } else {
+      bumpTitle = "Guía de Emergencia para Berrinches";
+      bumpDesc = "10 guiones palabra-por-palabra para los momentos más difíciles con "+cn+" — auto, restaurante, casa de abuelos, antes de dormir.";
+      bumpKey = "emergencia";
+    }
+    var total = mainPrice + (bump?9:0);
+    // Monta URL final + parâmetros do quiz como UTMs
+    function buildCheckoutUrl(){
+      var base;
+      if(bump){
+        base = CHECKOUT_LINKS["bump_"+bumpKey] || CHECKOUT_LINKS.bump_emergencia;
+      } else {
+        base = downsell ? CHECKOUT_LINKS.plan_only_downsell : CHECKOUT_LINKS.plan_only;
+      }
+      var params = new URLSearchParams({
+        utm_source:"quiz",
+        utm_medium:"checkout",
+        utm_campaign:"desconecta21",
+        utm_content:bump?("bump_"+bumpKey):"plan_only",
+        // Dados úteis pro CRM (Hotmart/Kiwify repassam como query strings)
+        child_name:cn||"",
+        parent_name:pn||"",
+        score:String(calcScore(ans)),
+        reaction:ans.reaction||"",
+        age:String(ans.age||"")
+      });
+      return base + (base.indexOf("?")>=0?"&":"?") + params.toString();
+    }
+
+    return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
+      <div style={{animation:"fi .4s ease both",padding:"52px 20px 40px"}}>
+        <button onClick={function(){setScr("pricing");top2()}} style={{background:"none",border:"none",fontSize:13,color:"var(--tl)",fontWeight:700,cursor:"pointer",marginBottom:14,fontFamily:"var(--ft)",display:"inline-flex",alignItems:"center",gap:6}}>← Volver</button>
+        <div style={{fontSize:10,fontWeight:900,color:"var(--pr)",letterSpacing:"0.14em",marginBottom:6}}>PASO FINAL • CHECKOUT SEGURO</div>
+        <h2 style={{fontSize:22,fontWeight:900,lineHeight:1.2,marginBottom:20}}>El plan de {cn} está a 1 paso.</h2>
+
+        {/* RESUMO DO PEDIDO */}
+        <div style={{background:"var(--sf)",border:"2px solid var(--bd)",borderRadius:"var(--rd)",padding:"16px",marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:800,color:"var(--tl)",letterSpacing:"0.1em",marginBottom:12}}>TU PEDIDO</div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:10,paddingBottom:10,borderBottom:"1px dashed var(--bd)"}}>
+            <div style={{flex:1,paddingRight:8}}>
+              <div style={{fontSize:14,fontWeight:800,color:"var(--tx)"}}>Plan 21 días para {cn}</div>
+              <div style={{fontSize:11,color:"var(--tl)",marginTop:2}}>Acceso inmediato • hasta los 12 años</div>
+            </div>
+            <div style={{fontSize:15,fontWeight:900,color:"var(--tx)",whiteSpace:"nowrap"}}>${mainPrice}</div>
+          </div>
+          {bump && <div style={{display:"flex",justifyContent:"space-between",animation:"fi .3s ease both"}}>
+            <div style={{flex:1,paddingRight:8}}>
+              <div style={{fontSize:13,fontWeight:800,color:"var(--pr)"}}>+ {bumpTitle}</div>
+              <div style={{fontSize:11,color:"var(--tl)",marginTop:2}}>Bonus agregado</div>
+            </div>
+            <div style={{fontSize:14,fontWeight:900,color:"var(--pr)",whiteSpace:"nowrap"}}>+$9</div>
+          </div>}
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:12,paddingTop:12,borderTop:"2px solid var(--bd)"}}>
+            <div style={{fontSize:13,fontWeight:900,color:"var(--tx)"}}>TOTAL HOY</div>
+            <div><span style={{fontSize:24,fontWeight:900,color:"var(--pr)"}}>${total}</span><span style={{fontSize:11,color:"var(--tl)",marginLeft:3}}>USD</span></div>
+          </div>
+        </div>
+
+        {/* ORDER BUMP — design com checkbox gigante e borda tracejada amarela */}
+        <label style={{display:"block",cursor:"pointer",background:bump?"linear-gradient(180deg,#FFFBEE,#FFF4D6)":"var(--sf)",border:bump?"3px dashed #E8A32E":"3px dashed #D4C8B8",borderRadius:"var(--rd)",padding:"16px 14px",marginBottom:20,position:"relative",transition:"all .2s",transform:bump?"scale(1.01)":"none"}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+            <input type="checkbox" checked={bump} onChange={function(e){setBump(e.target.checked)}} style={{width:22,height:22,accentColor:"#E8A32E",marginTop:2,flexShrink:0,cursor:"pointer"}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
+                <span style={{fontSize:10,fontWeight:900,color:"#fff",background:"#E8A32E",padding:"3px 8px",borderRadius:20,letterSpacing:"0.08em"}}>⚡ SÍ, AGREGAR +$9</span>
+                <span style={{fontSize:10,fontWeight:800,color:"#8B6914"}}>86% de las familias lo agrega</span>
+              </div>
+              <div style={{fontSize:15,fontWeight:900,color:"var(--tx)",lineHeight:1.25,marginBottom:4}}>{bumpTitle}</div>
+              <div style={{fontSize:12,color:"var(--tm)",lineHeight:1.5,marginBottom:6}}>{bumpDesc}</div>
+              <div style={{display:"inline-flex",alignItems:"baseline",gap:5}}>
+                <span style={{fontSize:11,color:"var(--tl)",textDecoration:"line-through"}}>$27</span>
+                <span style={{fontSize:18,fontWeight:900,color:"#B8954E"}}>+$9 USD</span>
+                <span style={{fontSize:10,color:"#8B6914",fontWeight:700}}>solo en este pedido</span>
+              </div>
+            </div>
+          </div>
+        </label>
+
+        {/* CTA — redireciona pro checkout do gateway baseado na escolha do bump */}
+        <Btn onClick={function(){
+          var url = buildCheckoutUrl();
+          // Em dev (placeholder): mostra pra onde iria
+          if(url.indexOf("REPLACE_")>=0){
+            alert("🔗 Redirecionaria para:\n\n"+url+"\n\n(Substitua os links REPLACE_* no código pelos seus links reais do Kiwify/Hotmart)");
+            return;
+          }
+          window.location.href = url;
+        }} pulse>PAGAR ${total} — IR AL PAGO SEGURO →</Btn>
+
+        <p style={{fontSize:11,color:"var(--tl)",textAlign:"center",marginTop:12,lineHeight:1.5,fontWeight:600}}>
+          Al hacer clic te llevamos al checkout seguro de Kiwify.<br/>Tarjeta, PayPal, Pix y Apple Pay disponibles.
+        </p>
+
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:14,marginTop:14,fontSize:10,color:"var(--tl)",fontWeight:700}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Icon name="lock" size={12} strokeWidth={2}/>SSL 256-bit</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Icon name="shield-check" size={12} strokeWidth={2}/>Garantía 7 días</span>
+        </div>
+        <p style={{fontSize:10,color:"var(--tl)",textAlign:"center",marginTop:10,lineHeight:1.5}}>Procesado por Stripe • Tarjeta, PayPal y Apple Pay disponibles</p>
+      </div>
+    </div>;
+  }
+
+  // ═════════════════ OTO 1 — Kit Familia Completa ($37) ═════════════════
+  if(scr==="oto1"){
+    return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
+      <div style={{animation:"fi .5s ease both"}}>
+        {/* Banner de sucesso */}
+        <div style={{background:"linear-gradient(135deg,#2D936C,#1E7A55)",color:"#fff",padding:"52px 20px 18px",textAlign:"center"}}>
+          <div style={{width:54,height:54,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 10px",color:"#2D936C"}}><Icon name="check" size={30} strokeWidth={3}/></div>
+          <div style={{fontSize:11,fontWeight:900,letterSpacing:"0.14em",opacity:0.95,marginBottom:4}}>PAGO CONFIRMADO ✓</div>
+          <div style={{fontSize:14,fontWeight:700,opacity:0.95}}>Tu acceso está listo. Espera 10 segundos antes de salir…</div>
+        </div>
+
+        <div style={{padding:"28px 20px 40px"}}>
+          <div style={{fontSize:11,fontWeight:900,color:"var(--pr)",letterSpacing:"0.12em",marginBottom:8,textAlign:"center"}}>⚠ ANTES DE ENTRAR AL APP — LEE ESTO</div>
+          <h2 style={{fontSize:24,fontWeight:900,lineHeight:1.2,marginBottom:14,textAlign:"center"}}>
+            {pn?pn+", ":""}pagaste por <span style={{color:"var(--pr)"}}>{cn}</span>.<br/>Pero lo que dijiste sobre <u>tu pareja</u>… no se resuelve solo.
+          </h2>
+          <p style={{fontSize:14,color:"var(--tm)",lineHeight:1.6,marginBottom:20,textAlign:"center"}}>
+            El plan funciona <strong>cuando toda la familia está alineada</strong>. Si el otro adulto sigue dando pantalla, el progreso se rompe en 3 días.
+          </p>
+
+          {/* Card OTO */}
+          <div style={{background:"linear-gradient(180deg,#FFFDF8,#FFF6E3)",border:"3px solid #C9A961",borderRadius:"var(--rd)",padding:"24px 20px",position:"relative",marginBottom:18,boxShadow:"0 10px 32px rgba(201,169,97,.28)"}}>
+            <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#C9A961,#B8954E)",color:"#fff",fontSize:10,fontWeight:800,padding:"5px 16px",borderRadius:20,letterSpacing:"0.1em",whiteSpace:"nowrap"}}>SOLO EN ESTA PÁGINA</div>
+
+            <div style={{textAlign:"center",paddingTop:4,marginBottom:16}}>
+              <div style={{fontSize:11,color:"#8B6914",fontWeight:800,letterSpacing:"0.1em",marginBottom:4}}>ACTIVAR AHORA POR $37</div>
+              <div style={{fontSize:26,fontWeight:400,fontFamily:"var(--fh)",lineHeight:1.15,letterSpacing:"-0.01em",marginBottom:8}}>Transformación Familiar Completa</div>
+              <div style={{fontSize:12,color:"var(--tm)",lineHeight:1.5}}>No es un plan para {cn} — es el plan para <strong>toda tu familia</strong>.</div>
+            </div>
+
+            <div style={{background:"#fff",borderRadius:10,padding:"14px 14px",marginBottom:16,border:"1px solid #EADBB8"}}>
+              <div style={{fontSize:10,fontWeight:900,color:"#8B6914",letterSpacing:"0.1em",marginBottom:10}}>INCLUYE TODO ESTO:</div>
+              {[
+                {t:"Plan para hasta 3 hermanos", s:"Perfiles personalizados por edad y reacción"},
+                {t:"Script de conversa com tu pareja", s:"20 frases probadas, en orden exacto"},
+                {t:"Guía para abuelos (imprimible)", s:"Argumentos + cartón de bolsillo"},
+                {t:"Grupo WhatsApp privado", s:"Con otras 40 familias en tu misma semana"},
+                {t:"Protocolo de recaída", s:"Qué hacer cuando "+cn+" vuelve a pedir pantalla"},
+              ].map(function(f,i){return <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:i<4?10:0}}>
+                <span style={{color:"var(--sc)",flexShrink:0,marginTop:2}}><Icon name="check" size={15} strokeWidth={2.5}/></span>
+                <div><div style={{fontSize:13,fontWeight:800,color:"var(--tx)",lineHeight:1.3}}>{f.t}</div><div style={{fontSize:11,color:"var(--tm)",marginTop:1}}>{f.s}</div></div>
+              </div>})}
+            </div>
+
+            <div style={{textAlign:"center",marginBottom:14}}>
+              <div style={{fontSize:12,color:"var(--tl)",textDecoration:"line-through",marginBottom:2}}>Valor normal: $97 USD</div>
+              <div style={{display:"inline-flex",alignItems:"baseline",gap:4}}>
+                <span style={{fontSize:13,color:"var(--pr)",fontWeight:700}}>+</span>
+                <span style={{fontSize:46,fontWeight:900,color:"var(--pr)",letterSpacing:"-0.03em",lineHeight:1}}>$37</span>
+                <span style={{fontSize:12,color:"var(--tm)",fontWeight:700}}>USD</span>
+              </div>
+              <div style={{fontSize:11,color:"#8B6914",fontWeight:800,marginTop:4}}>Un pago • se suma a tu pedido</div>
+            </div>
+
+            <Btn onClick={function(){setScr("thankyou");top2()}} pulse>SÍ, ACTIVAR PARA TODA LA FAMILIA →</Btn>
+            <p style={{fontSize:10,color:"var(--tl)",textAlign:"center",marginTop:10,fontWeight:700}}>Un clic • mismo método de pago • garantía 14 días</p>
+          </div>
+
+          {/* Social proof curto */}
+          <div style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:14,marginBottom:18,display:"flex",gap:12,alignItems:"flex-start"}}>
+            <img src="https://i.pravatar.cc/80?img=20" style={{width:44,height:44,borderRadius:"50%",border:"2px solid var(--bd)",flexShrink:0}}/>
             <div>
-              <div style={{fontSize:13,fontWeight:900,color:"var(--sc)"}}>Garantía 7 días — 100% de vuelta</div>
-              <div style={{fontSize:11,color:"var(--tm)"}}>Sin preguntas. El riesgo es completamente nuestro.</div>
+              <div style={{fontSize:12,marginBottom:4}}>⭐⭐⭐⭐⭐</div>
+              <p style={{fontSize:13,fontStyle:"italic",lineHeight:1.5,color:"var(--tx)",marginBottom:6}}>"El script para mi marido fue lo que salvó el plan. Sin eso, él seguía dando la tablet en el coche y todo se rompía."</p>
+              <div style={{fontSize:11,fontWeight:800}}>Elena R.</div>
+              <div style={{fontSize:10,color:"var(--tl)"}}>Mamá de 2 • Buenos Aires</div>
             </div>
           </div>
 
-          <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:20}}>
-            {pls.map(function(pl){
-              var is2 = sp===pl.id;
-              return <button key={pl.id} onClick={function(){setSp(pl.id)}} style={{width:"100%",textAlign:"left",cursor:"pointer",background:is2?"var(--pl)":"var(--sf)",border:is2?"2px solid var(--pr)":"2px solid var(--bd)",borderRadius:"var(--rd)",padding:"18px 16px",position:"relative",fontFamily:"var(--ft)",transform:is2?"scale(1.015)":"none",transition:"all .2s",boxShadow:is2?"0 4px 20px rgba(232,83,46,.15)":"none"}}>
-                {pl.rec?<div style={{position:"absolute",top:-10,right:14,background:"var(--pr)",color:"#fff",fontSize:10,fontWeight:900,padding:"4px 10px",borderRadius:20,letterSpacing:"0.05em"}}>RECOMENDADO</div>:null}
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                  <div style={{fontSize:15,fontWeight:900}}>{pl.nm}</div>
-                  <div style={{textAlign:"right"}}>
-                    <span style={{fontSize:12,color:"var(--tl)",textDecoration:"line-through",marginRight:5}}>${pl.op}</span>
-                    <span style={{fontSize:24,fontWeight:900,color:"var(--pr)"}}>${pl.pr}</span>
-                    <span style={{fontSize:11,color:"var(--tl)"}}> USD</span>
-                  </div>
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                  {pl.ft.map(function(f,i){return <div key={i} style={{display:"flex",alignItems:"flex-start",gap:7}}>
-                    <span style={{color:"var(--sc)",fontWeight:800,fontSize:13,marginTop:1}}>✓</span>
-                    <span style={{fontSize:12,color:"var(--tm)"}}>{f}</span>
-                  </div>})}
-                </div>
-              </button>;
-            })}
+          <button onClick={function(){setScr("oto2");top2()}} style={{width:"100%",padding:14,background:"none",border:"none",fontSize:12,color:"var(--tl)",textDecoration:"underline",cursor:"pointer",fontFamily:"var(--ft)",fontWeight:600}}>No, gracias — continuar solo con el plan básico</button>
+        </div>
+      </div>
+    </div>;
+  }
+
+  // ═════════════════ OTO 2 — Desconecta Pro 6 meses ($97) ═════════════════
+  if(scr==="oto2"){
+    return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
+      <div style={{animation:"fi .5s ease both",padding:"52px 20px 40px"}}>
+        <div style={{fontSize:10,fontWeight:900,color:"var(--tl)",letterSpacing:"0.14em",marginBottom:8,textAlign:"center"}}>ESPERA — UN PUNTO MÁS IMPORTANTE</div>
+        <h2 style={{fontSize:24,fontWeight:900,lineHeight:1.2,marginBottom:12,textAlign:"center"}}>Los 21 días son el <u>comienzo</u>.</h2>
+        <p style={{fontSize:14,color:"var(--tm)",lineHeight:1.6,marginBottom:18,textAlign:"center"}}>
+          Las vacaciones, cumpleaños, estrés laboral — son los momentos donde <strong>6 de cada 10 familias recae</strong>. Ahí es donde muere el cambio.
+        </p>
+
+        {/* Card OTO2 */}
+        <div style={{background:"linear-gradient(180deg,#1A1A1A,#2D1810)",color:"#fff",border:"2px solid #C9A961",borderRadius:"var(--rd)",padding:"26px 20px",position:"relative",marginBottom:18,boxShadow:"0 12px 40px rgba(0,0,0,.35)"}}>
+          <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#C9A961,#B8954E)",color:"#fff",fontSize:10,fontWeight:800,padding:"5px 16px",borderRadius:20,letterSpacing:"0.1em",whiteSpace:"nowrap"}}>PROGRAMA PREMIUM</div>
+
+          <div style={{textAlign:"center",paddingTop:6,marginBottom:18}}>
+            <div style={{fontSize:30,fontWeight:400,fontFamily:"var(--fh)",lineHeight:1.1,letterSpacing:"-0.015em",marginBottom:6}}>Desconecta <span style={{color:"#C9A961"}}>Pro</span></div>
+            <div style={{fontSize:12,color:"#D4BFA8",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>6 meses de acompañamiento completo</div>
           </div>
 
-          <Btn onClick={function(){alert("Checkout — integrar pasarela")}} pulse>{ctaTxt}</Btn>
-          <p style={{fontSize:11,color:"var(--tl)",textAlign:"center",marginTop:8,fontWeight:600}}>≈ menos que 1 café al día por un mes • pago único</p>
-          <div style={{display:"flex",justifyContent:"center",gap:14,marginTop:10,fontSize:11,color:"var(--tl)"}}>
-            <span>💳 Tarjeta</span><span>📲 PayPal</span><span>🍎 Apple Pay</span>
-          </div>
-
-          <h3 style={{fontSize:16,fontWeight:900,textAlign:"center",marginTop:30,marginBottom:14}}>Preguntas frecuentes</h3>
-          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
-            {fqs.map(function(f,i){return <div key={i} style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",overflow:"hidden"}}>
-              <button onClick={function(){setEfq(efq===i?null:i)}} style={{width:"100%",padding:"13px 14px",background:"none",border:"none",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",fontFamily:"var(--ft)",textAlign:"left"}}>
-                <span style={{fontSize:13,fontWeight:700}}>{f.q}</span>
-                <span style={{fontSize:16,color:"var(--tl)",transform:efq===i?"rotate(45deg)":"none",transition:"transform .2s"}}>+</span>
-              </button>
-              {efq===i?<div style={{padding:"0 14px 12px",fontSize:12,color:"var(--tm)",lineHeight:1.55}}>{f.a}</div>:null}
+          <div style={{background:"rgba(255,255,255,0.05)",borderRadius:10,padding:"16px 14px",marginBottom:18,border:"1px solid rgba(201,169,97,0.3)"}}>
+            {[
+              {t:"Consulta 1-on-1 por video (20 min)", s:"Con psicóloga infantil certificada, esta semana"},
+              {t:"6 meses de contenido nuevo semanal", s:"Actividades por estación, cumpleaños, vacaciones"},
+              {t:"Protocolo de recaída blindado", s:"Qué hacer exactamente cuando "+cn+" pide pantalla otra vez"},
+              {t:"Acceso VITALICIO a actualizaciones", s:"Todo lo que creemos en el futuro, gratis"},
+              {t:"Comunidad privada Pro", s:"40 familias, mensajes directos con especialistas"},
+            ].map(function(f,i){return <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:i<4?11:0}}>
+              <span style={{color:"#C9A961",flexShrink:0,marginTop:2}}><Icon name="star-filled" size={14}/></span>
+              <div><div style={{fontSize:13,fontWeight:800,color:"#fff",lineHeight:1.3}}>{f.t}</div><div style={{fontSize:11,color:"#D4BFA8",marginTop:1,lineHeight:1.4}}>{f.s}</div></div>
             </div>})}
           </div>
+
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:12,color:"#9A8270",textDecoration:"line-through",marginBottom:2}}>Valor normal: $297 USD</div>
+            <div style={{display:"inline-flex",alignItems:"baseline",gap:4,color:"#C9A961"}}>
+              <span style={{fontSize:13,fontWeight:700}}>+</span>
+              <span style={{fontSize:50,fontWeight:900,letterSpacing:"-0.03em",lineHeight:1}}>$97</span>
+              <span style={{fontSize:12,fontWeight:700}}>USD</span>
+            </div>
+            <div style={{fontSize:11,color:"#C9A961",fontWeight:800,marginTop:4}}>Un pago • sin renovación automática</div>
+          </div>
+
+          <button onClick={function(){setScr("thankyou");top2()}} style={{width:"100%",padding:"17px 24px",background:"linear-gradient(135deg,#C9A961,#B8954E)",color:"#1A1A1A",border:"none",borderRadius:"var(--rd)",fontFamily:"var(--ft)",fontSize:15,fontWeight:900,cursor:"pointer",letterSpacing:"0.01em",boxShadow:"0 4px 16px rgba(201,169,97,.4)"}}>SÍ, ACTIVAR DESCONECTA PRO →</button>
+          <p style={{fontSize:10,color:"#9A8270",textAlign:"center",marginTop:10,fontWeight:700}}>Un clic • garantía 30 días</p>
         </div>
+
+        <div style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:16,marginBottom:14,display:"flex",gap:12,alignItems:"flex-start"}}>
+          <img src="https://i.pravatar.cc/80?img=32" style={{width:44,height:44,borderRadius:"50%",border:"2px solid var(--bd)",flexShrink:0}}/>
+          <div>
+            <div style={{fontSize:12,marginBottom:4}}>⭐⭐⭐⭐⭐</div>
+            <p style={{fontSize:13,fontStyle:"italic",lineHeight:1.5,marginBottom:6}}>"La consulta 1-on-1 cambió todo. La psicóloga vio cosas que el plan no cubre. Vale el Pro solo por eso."</p>
+            <div style={{fontSize:11,fontWeight:800}}>Alejandra M.</div>
+            <div style={{fontSize:10,color:"var(--tl)"}}>Mamá de gemelos (6) • Santiago</div>
+          </div>
+        </div>
+
+        <button onClick={function(){setScr("thankyou");top2()}} style={{width:"100%",padding:14,background:"none",border:"none",fontSize:12,color:"var(--tl)",textDecoration:"underline",cursor:"pointer",fontFamily:"var(--ft)",fontWeight:600}}>No, gracias — ir al app ahora</button>
+      </div>
+    </div>;
+  }
+
+  // ═════════════════ THANK YOU ═════════════════
+  if(scr==="thankyou"){
+    return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
+      <div style={{animation:"fi .5s ease both",padding:"72px 24px 40px",textAlign:"center"}}>
+        <div style={{width:88,height:88,borderRadius:"50%",background:"linear-gradient(135deg,#2D936C,#1E7A55)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",color:"#fff",boxShadow:"0 8px 28px rgba(45,147,108,.35)"}}><Icon name="check" size={48} strokeWidth={3}/></div>
+        <div style={{fontSize:11,fontWeight:900,color:"var(--sc)",letterSpacing:"0.14em",marginBottom:6}}>TODO LISTO ✓</div>
+        <h2 style={{fontSize:30,fontWeight:400,fontFamily:"var(--fh)",lineHeight:1.15,letterSpacing:"-0.01em",marginBottom:10}}>Bienvenido, {pn||"familia"}.</h2>
+        <p style={{fontSize:15,color:"var(--tm)",lineHeight:1.6,marginBottom:24}}>El plan de <strong style={{color:"var(--pr)"}}>{cn}</strong> está activo. Acabamos de enviar el acceso a <strong>{cc.email||ud.email||"tu email"}</strong>.</p>
+
+        <div style={{background:"var(--sf)",border:"1px solid var(--bd)",borderRadius:"var(--rd)",padding:"20px 18px",marginBottom:22,textAlign:"left"}}>
+          <div style={{fontSize:11,fontWeight:900,color:"var(--tl)",letterSpacing:"0.1em",marginBottom:12}}>SIGUIENTES PASOS</div>
+          {[
+            {n:"1",t:"Abrí tu email en 2 minutos",s:"Busca: \"Tu acceso a Desconecta\""},
+            {n:"2",t:"Descargá el app o usá el web",s:"Android, iPhone o navegador"},
+            {n:"3",t:"Empezá con el día 1 HOY",s:"10 minutos — mientras "+cn+" está contigo"},
+          ].map(function(x,i){return <div key={i} style={{display:"flex",gap:12,marginBottom:i<2?12:0}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:"var(--pl)",color:"var(--pr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,flexShrink:0}}>{x.n}</div>
+            <div><div style={{fontSize:13,fontWeight:800}}>{x.t}</div><div style={{fontSize:12,color:"var(--tm)"}}>{x.s}</div></div>
+          </div>})}
+        </div>
+
+        <button onClick={function(){alert("Redirect to app.desconecta.com")}} style={{width:"100%",padding:"17px 24px",background:"var(--pr)",color:"#fff",border:"none",borderRadius:"var(--rd)",fontFamily:"var(--ft)",fontSize:15,fontWeight:900,cursor:"pointer",boxShadow:"0 4px 16px rgba(232,83,46,.35)"}}>ABRIR EL APP AHORA →</button>
+        <p style={{fontSize:11,color:"var(--tl)",marginTop:12}}>Soporte: hola@desconecta.com</p>
       </div>
     </div>;
   }

@@ -4,9 +4,33 @@
 // Exports: IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard
 
 // ─────────────────────────────────────────────────────────────
+// Live time hook — returns Date; formatIOSTime → "HH:MM" en fuso local
+// ─────────────────────────────────────────────────────────────
+function useLiveTime(){
+  const [now, setNow] = React.useState(new Date());
+  React.useEffect(function(){
+    var firstDelay = 1000 - (Date.now() % 1000);
+    var iv;
+    var to = setTimeout(function(){
+      setNow(new Date());
+      iv = setInterval(function(){ setNow(new Date()); }, 1000);
+    }, firstDelay);
+    return function(){ clearTimeout(to); if(iv) clearInterval(iv); };
+  }, []);
+  return now;
+}
+function formatIOSTime(d){
+  return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+window.useLiveTime = useLiveTime;
+window.formatIOSTime = formatIOSTime;
+
+// ─────────────────────────────────────────────────────────────
 // Status bar
 // ─────────────────────────────────────────────────────────────
-function IOSStatusBar({ dark = false, time = '9:41' }) {
+function IOSStatusBar({ dark = false, time }) {
+  const live = useLiveTime();
+  const shownTime = time || formatIOSTime(live);
   const c = dark ? '#fff' : '#000';
   return (
     <div style={{
@@ -18,7 +42,7 @@ function IOSStatusBar({ dark = false, time = '9:41' }) {
         <span style={{
           fontFamily: '-apple-system, "SF Pro", system-ui', fontWeight: 590,
           fontSize: 17, lineHeight: '22px', color: c,
-        }}>{time}</span>
+        }}>{shownTime}</span>
       </div>
       <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, paddingTop: 1, paddingRight: 1 }}>
         <svg width="19" height="12" viewBox="0 0 19 12">
