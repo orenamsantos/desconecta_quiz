@@ -86,29 +86,18 @@ async function build() {
   // 5) copia React prod builds (hasheados)
   const { reactName, reactDomName } = copyReact();
 
-  // 6) copia fontes self-hosted + gera CSS de @font-face com hashes
-  const { fontsCss, criticalFonts } = copyFonts();
-
-  // 7) gera index.html a partir de template com todos os nomes hasheados
-  generateHtml(outName, reactName, reactDomName, fontsCss, criticalFonts);
+  // 6) gera index.html a partir de template com os nomes hasheados
+  generateHtml(outName, reactName, reactDomName);
 
   console.log(`✓ out: ${OUT_DIR}`);
 }
 
-function generateHtml(bundleName, reactName, reactDomName, fontsCss, criticalFonts) {
+function generateHtml(bundleName, reactName, reactDomName) {
   const template = fs.readFileSync(path.join(ROOT, "index.template.html"), "utf8");
-
-  // Monta os <link rel="preload" as="font"> dos fonts críticos
-  const fontPreloads = criticalFonts
-    .map(f => `<link rel="preload" href="${f}" as="font" type="font/woff2" crossorigin="anonymous"/>`)
-    .join("\n");
-
   const html = template
     .replace(/__BUNDLE__/g, bundleName)
     .replace(/__REACT__/g, reactName)
-    .replace(/__REACT_DOM__/g, reactDomName)
-    .replace(/__FONTS_CSS__/g, fontsCss)
-    .replace(/__FONT_PRELOADS__/g, fontPreloads);
+    .replace(/__REACT_DOM__/g, reactDomName);
   fs.writeFileSync(path.join(OUT_DIR, "index.html"), html);
   console.log(`✓ html:    index.html`);
 }
@@ -134,51 +123,6 @@ function copyReact() {
   fs.writeFileSync(path.join(OUT_DIR, reactDomName), reactDomCode);
   console.log(`✓ react:   ${reactName} (${(reactCode.length/1024).toFixed(1)} KB) + ${reactDomName} (${(reactDomCode.length/1024).toFixed(1)} KB)`);
   return { reactName, reactDomName };
-}
-
-// ─── Fontes self-hosted ────────────────────────────────────────────────
-// Evita 2 conexões cross-origin (fonts.googleapis.com + fonts.gstatic.com)
-// e o round-trip do CSS dinâmico do Google Fonts. Latin-only para ficar leve.
-function copyFonts() {
-  const fontSpecs = [
-    // [family, weight, style, file, critical?]
-    // critical=true → preload no <head> (usados no hero da primeira dobra)
-    { family: "Inter", weight: 400, style: "normal", file: "inter/files/inter-latin-400-normal.woff2" },
-    { family: "Inter", weight: 500, style: "normal", file: "inter/files/inter-latin-500-normal.woff2" },
-    { family: "Inter", weight: 600, style: "normal", file: "inter/files/inter-latin-600-normal.woff2" },
-    { family: "Inter", weight: 700, style: "normal", file: "inter/files/inter-latin-700-normal.woff2", critical: true },
-    { family: "Inter", weight: 800, style: "normal", file: "inter/files/inter-latin-800-normal.woff2" },
-    { family: "Inter", weight: 900, style: "normal", file: "inter/files/inter-latin-900-normal.woff2", critical: true },
-    { family: "Instrument Serif", weight: 400, style: "normal", file: "instrument-serif/files/instrument-serif-latin-400-normal.woff2", critical: true },
-    { family: "Instrument Serif", weight: 400, style: "italic", file: "instrument-serif/files/instrument-serif-latin-400-italic.woff2" },
-  ];
-
-  const fontsDir = path.join(ROOT, "node_modules", "@fontsource");
-  const cssRules = [];
-  const criticalFonts = [];
-  let totalSize = 0;
-
-  for (const spec of fontSpecs) {
-    const src = path.join(fontsDir, spec.file);
-    if (!fs.existsSync(src)) {
-      throw new Error(`Fonte não encontrada: ${src}`);
-    }
-    const buf = fs.readFileSync(src);
-    const hash = crypto.createHash("sha256").update(buf).digest("hex").slice(0, 10);
-    const baseName = path.basename(spec.file, ".woff2");
-    const outName = `${baseName}.${hash}.woff2`;
-    fs.writeFileSync(path.join(OUT_DIR, outName), buf);
-    totalSize += buf.length;
-
-    cssRules.push(
-      `@font-face{font-family:'${spec.family}';font-style:${spec.style};font-weight:${spec.weight};font-display:swap;src:url(${outName}) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}`
-    );
-
-    if (spec.critical) criticalFonts.push(outName);
-  }
-
-  console.log(`✓ fonts:   ${fontSpecs.length} WOFF2 (${(totalSize/1024).toFixed(1)} KB total, ${criticalFonts.length} critical preloaded)`);
-  return { fontsCss: cssRules.join(""), criticalFonts };
 }
 
 build().catch(err => {
