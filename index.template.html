@@ -10,20 +10,15 @@
 <!-- Favicon inline (zero request) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23E8532E'/%3E%3Cg fill='white'%3E%3Cg transform='rotate(0 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(45 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(90 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(135 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(180 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(225 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(270 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Cg transform='rotate(315 24 24)'%3E%3Cpath d='M 24 4 L 26 10 L 22 10 Z'/%3E%3C/g%3E%3Ccircle cx='24' cy='24' r='9'/%3E%3C/g%3E%3C/svg%3E"/>
 
-<!-- Preconnect para Google Fonts (antes de qualquer CSS request) -->
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<!-- Fontes self-hosted (Latin-only WOFF2, hasheados, cache immutable).
+     Substitui fonts.googleapis.com + fonts.gstatic.com — zero conexões
+     cross-origin. Preloads e font-face CSS injetados pelo build.js. -->
+__FONT_PRELOADS__
 
-<!-- Fonts: carregadas via <link> no head, display=swap. Isso substitui o @import
-     que existia dentro do CSS injetado pelo React (aquele @import ainda existe
-     no GCSS como fallback, mas o navegador deduplica a request). -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap"/>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap"/></noscript>
-
-<!-- CSS crítico inline: estilos do hero estático + dimensionamento. Tudo o que
-     aparece antes do React montar precisa estar aqui (ou inline em cada elemento). -->
+<!-- CSS crítico inline: font-face self-hosted + estilos do hero estático +
+     dimensionamento. Tudo o que aparece antes do React montar está aqui. -->
 <style>
+__FONTS_CSS__
   html,body{margin:0;padding:0;background:#F7F5F0;font-family:'Inter',-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;color:#1A1A1A}
   html,body,#root{height:100%}
   body{min-height:100vh;min-height:100dvh}
@@ -34,20 +29,20 @@
   .__intro{padding:68px 20px 32px;text-align:center;max-width:460px;margin:0 auto}
   .__logoRow{display:inline-flex;align-items:center;gap:11px;font-family:'Instrument Serif',Georgia,serif;font-size:30.8px;color:#E8532E;letter-spacing:-0.015em;line-height:1;font-weight:400}
   .__logoMark{width:33px;height:33px;flex-shrink:0;vertical-align:middle}
-  .__label{font-size:9px;color:#888;letter-spacing:0.18em;font-weight:700;margin-top:2px}
+  .__label{font-size:9px;color:#6B6B6B;letter-spacing:0.18em;font-weight:700;margin-top:2px}
   .__alert{background:#FDEAEA;border:1px solid #F5C6C6;border-radius:12px;padding:10px 14px;margin:16px 0 18px}
-  .__alertH{font-size:11px;font-weight:900;color:#D32F2F;letter-spacing:0.05em;margin-bottom:2px}
+  .__alertH{font-size:11px;font-weight:900;color:#B71C1C;letter-spacing:0.05em;margin-bottom:2px}
   .__alertB{font-size:11px;color:#4A4A4A;line-height:1.4}
   .__h1{font-family:'Instrument Serif',Georgia,serif;font-size:26px;font-weight:900;line-height:1.2;margin:0 0 10px;letter-spacing:-0.01em;color:#1A1A1A}
   .__sub{font-size:16px;font-weight:700;color:#4A4A4A;margin:0 0 6px;line-height:1.4}
   .__hl{color:#E8532E}
   .__rot{height:36px;display:flex;align-items:center;justify-content:center;margin:14px 0;font-weight:700}
-  .__rotL{font-size:13px;color:#888}
+  .__rotL{font-size:13px;color:#6B6B6B}
   .__rotW{font-size:15px;font-weight:900;color:#E8532E;font-style:italic}
   .__desc{font-size:14px;color:#4A4A4A;line-height:1.55;margin:0 0 18px}
   .__btn{width:100%;padding:17px 24px;background:#E8532E;color:#fff;border:none;border-radius:14px;font-family:'Inter',-apple-system,sans-serif;font-size:16px;font-weight:900;letter-spacing:0.01em;box-shadow:0 4px 16px rgba(232,83,46,.35);cursor:pointer}
-  .__fine{font-size:11px;color:#888;margin:10px 0 0;font-weight:600}
-  .__badges{display:flex;justify-content:center;gap:14px;margin-top:16px;font-size:11px;color:#888;font-weight:600}
+  .__fine{font-size:11px;color:#6B6B6B;margin:10px 0 0;font-weight:600}
+  .__badges{display:flex;justify-content:center;gap:14px;margin-top:16px;font-size:11px;color:#6B6B6B;font-weight:600}
   .__splash{margin:22px auto 0;width:24px;height:24px;border:2.5px solid #E8532E33;border-top-color:#E8532E;border-radius:50%;animation:__r .8s linear infinite}
   @keyframes __r{to{transform:rotate(360deg)}}
 </style>
@@ -58,7 +53,7 @@
 <link rel="preload" href="__REACT_DOM__" as="script"/>
 </head>
 <body>
-<div id="root"><div class="__intro">
+<main id="root"><div class="__intro">
   <div class="__logoRow">
     <svg class="__logoMark" viewBox="0 0 48 48" aria-hidden="true">
       <g fill="#E8532E">
@@ -87,7 +82,7 @@
   <p class="__fine">Gratis • 2 minutos • 12.347 familias ya lo hicieron</p>
   <div class="__badges"><span>🔒 Datos seguros</span><span>📱 Android + iPhone</span></div>
   <div class="__splash" aria-hidden="true"></div>
-</div></div>
+</div></main>
 
 <!-- React production builds self-hosted (mesma origem, cache immutable via vercel.json) -->
 <script src="__REACT__"></script>
