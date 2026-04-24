@@ -1063,13 +1063,13 @@ function App(){
     // └────────────────────────────────────────────────────────────┘
     var CHECKOUT_LINKS = {
       // Plano sozinho (sem bump)
-      plan_only:         "https://pay.kiwify.com/REPLACE_PLAN_17",
-      plan_only_downsell:"https://pay.kiwify.com/REPLACE_PLAN_7",
+      plan_only:         "https://pay.hotmart.com/R105527828Q",  // Plan 21 Días — $17
+      plan_only_downsell:"https://pay.hotmart.com/K105527878M",  // Versión Esencial — $7 (downsell)
       // Plano + bump personalizado (4 variações)
-      bump_berrinches:   "https://pay.kiwify.com/REPLACE_PLAN_BUMP_BERRINCHES_26",
-      bump_nocturno:     "https://pay.kiwify.com/REPLACE_PLAN_BUMP_NOCTURNO_26",
-      bump_comidas:      "https://pay.kiwify.com/REPLACE_PLAN_BUMP_COMIDAS_26",
-      bump_emergencia:   "https://pay.kiwify.com/REPLACE_PLAN_BUMP_EMERGENCIA_26"
+      bump_berrinches:   "https://pay.hotmart.com/L105527928G",  // + Berrinches Explosivos
+      bump_nocturno:     "https://pay.hotmart.com/X105527957D",  // + Rutina Nocturna Sin Pantalla
+      bump_comidas:      "https://pay.hotmart.com/D105527991S",  // + Comidas Sin Pantalla
+      bump_emergencia:   "https://pay.hotmart.com/Y105528067K"   // + Guía Emergencia Berrinches (default)
     };
     // Order bump personalizado por reaction/criticalMoments
     var bumpTitle, bumpDesc, bumpKey;
