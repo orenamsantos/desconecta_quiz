@@ -26,6 +26,82 @@ const SOURCES = [
   "desconecta-quiz-v3.jsx",
 ];
 
+const GTM_LINK_CLICK_HELPER = [
+  "<script>",
+  "(function(){",
+  "  var LINK_CLASS = 'gtm-link-click';",
+  "  var LINK_ID_PREFIX = 'gtm-link-';",
+  "  var counter = 0;",
+  "",
+  "  function slugify(value){",
+  "    return String(value || 'cta')",
+  "      .toLowerCase()",
+  "      .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')",
+  "      .replace(/[^a-z0-9]+/g, '-')",
+  "      .replace(/^-+|-+$/g, '')",
+  "      .slice(0, 48) || 'cta';",
+  "  }",
+  "",
+  "  function ensureLinkAttributes(link){",
+  "    if(!link || !link.getAttribute || !link.getAttribute('href')) return;",
+  "    if(!link.id){",
+  "      counter += 1;",
+  "      link.id = LINK_ID_PREFIX + slugify(link.textContent) + '-' + counter;",
+  "    }",
+  "    if(!link.classList.contains(LINK_CLASS)) link.classList.add(LINK_CLASS);",
+  "    link.setAttribute('data-gtm-link-click', 'true');",
+  "  }",
+  "",
+  "  function getButtonUrl(button){",
+  "    if(!button || !button.getAttribute) return '';",
+  "    var attrs = ['href','data-href','data-url','data-checkout-url','data-redirect-url','data-link'];",
+  "    for(var i=0;i<attrs.length;i++){",
+  "      var value = button.getAttribute(attrs[i]);",
+  "      if(value && /^(https?:\\/\\/|\\/)/.test(value)) return value;",
+  "    }",
+  "    var inlineClick = button.getAttribute('onclick') || '';",
+  "    var match = inlineClick.match(/https?:\\/\\/[^'\"\\s<>]+/);",
+  "    return match ? match[0] : '';",
+  "  }",
+  "",
+  "  function buttonToLink(button){",
+  "    if(!button || button.dataset.gtmConverted === 'true') return;",
+  "    var url = getButtonUrl(button);",
+  "    if(!url) return;",
+  "",
+  "    var link = document.createElement('a');",
+  "    link.href = url;",
+  "    link.id = button.id || LINK_ID_PREFIX + slugify(button.textContent) + '-' + (++counter);",
+  "    link.className = (button.className ? button.className + ' ' : '') + LINK_CLASS;",
+  "    link.style.cssText = button.style.cssText;",
+  "    link.setAttribute('role', 'button');",
+  "    link.setAttribute('data-gtm-link-click', 'true');",
+  "    link.innerHTML = button.innerHTML;",
+  "",
+  "    button.dataset.gtmConverted = 'true';",
+  "    button.replaceWith(link);",
+  "  }",
+  "",
+  "  function enhanceGtmLinks(){",
+  "    document.querySelectorAll('a[href]').forEach(ensureLinkAttributes);",
+  "    document.querySelectorAll('button[href],button[data-href],button[data-url],button[data-checkout-url],button[data-redirect-url],button[data-link]').forEach(buttonToLink);",
+  "  }",
+  "",
+  "  if(document.readyState === 'loading'){",
+  "    document.addEventListener('DOMContentLoaded', enhanceGtmLinks);",
+  "  } else {",
+  "    enhanceGtmLinks();",
+  "  }",
+  "",
+  "  new MutationObserver(enhanceGtmLinks).observe(document.documentElement, { childList:true, subtree:true });",
+  "  document.addEventListener('click', function(event){",
+  "    var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;",
+  "    if(link) ensureLinkAttributes(link);",
+  "  }, true);",
+  "})();",
+  "</script>"
+].join("\n");
+
 async function build() {
   if (fs.existsSync(OUT_DIR)) fs.rmSync(OUT_DIR, { recursive: true, force: true });
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -90,7 +166,8 @@ function generateHtml(bundleName) {
     .replace(/<script src="__BUNDLE__"><\/script>/, '<script src="' + bundleName + '"></script>')
     .replace(/<link rel="preload" href="__REACT__" as="script"\/>\s*/g, "")
     .replace(/<link rel="preload" href="__REACT_DOM__" as="script"\/>\s*/g, "")
-    .replace(/<link rel="preload" href="__BUNDLE__" as="script"\/>/, '<link rel="preload" href="' + bundleName + '" as="script"/>');
+    .replace(/<link rel="preload" href="__BUNDLE__" as="script"\/>/, '<link rel="preload" href="' + bundleName + '" as="script"/>')
+    .replace(/<\/body>/, GTM_LINK_CLICK_HELPER + "\n</body>");
 
   fs.writeFileSync(path.join(OUT_DIR, "index.html"), html);
   console.log(`✓ html:    index.html`);
