@@ -120,6 +120,38 @@ function Btn({children,onClick,disabled,pulse}){
   return <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"17px 24px",background:disabled?"#ccc":"var(--pr)",color:disabled?"#999":"#fff",border:"none",borderRadius:"var(--rd)",fontFamily:"var(--ft)",fontSize:16,fontWeight:900,cursor:disabled?"default":"pointer",transition:"all .15s",boxShadow:disabled?"none":"0 4px 16px rgba(232,83,46,.35)",letterSpacing:"0.01em",animation:pulse&&!disabled?"slowPulse 2.4s ease-in-out infinite":"none"}}>{children}</button>;
 }
 
+// ─── BtnLink: idêntico visualmente a <Btn>, mas renderiza <a href> real.
+// ─── Necessário para que o GTM detecte como gtm.linkClick e dispare
+// ─── as tags 02 | FB | InitiateCheckout e 02 | API | begin_checkout.
+function BtnLink({children,href,id,className,pulse,onClick}){
+  return <a
+    href={href}
+    id={id}
+    className={className}
+    onClick={onClick}
+    style={{
+      display:"block",
+      width:"100%",
+      padding:"17px 24px",
+      background:"var(--pr)",
+      color:"#fff",
+      border:"none",
+      borderRadius:"var(--rd)",
+      fontFamily:"var(--ft)",
+      fontSize:16,
+      fontWeight:900,
+      cursor:"pointer",
+      transition:"all .15s",
+      boxShadow:"0 4px 16px rgba(232,83,46,.35)",
+      letterSpacing:"0.01em",
+      textAlign:"center",
+      textDecoration:"none",
+      boxSizing:"border-box",
+      animation:pulse?"slowPulse 2.4s ease-in-out infinite":"none"
+    }}
+  >{children}</a>;
+}
+
 // ─── LOGO: sol folk LATAM (8 raios triangulares + círculo) + wordmark serif ──
 function Logo({color,size}){
   var c = color || "var(--pr)";
@@ -1092,6 +1124,9 @@ function App(){
     }
     var total = mainPrice + (bump?9:0);
     // Monta URL final + parâmetros do quiz como UTMs
+    // ─── IMPORTANTE: agora calculada na renderização (não no clique) para
+    // ─── que possa ser injetada no atributo href da tag <a>. Isso permite
+    // ─── que o GTM detecte o clique como gtm.linkClick nativamente.
     function buildCheckoutUrl(){
       var base;
       if(bump){
@@ -1113,6 +1148,8 @@ function App(){
       });
       return base + (base.indexOf("?")>=0?"&":"?") + params.toString();
     }
+    // URL pronta para o atributo href
+    var checkoutUrl = buildCheckoutUrl();
 
     return <div ref={rf} style={SH} data-act="4"><style>{GCSS}</style>
       <div style={{animation:"fi .4s ease both",padding:"52px 20px 40px"}}>
@@ -1163,16 +1200,15 @@ function App(){
           </div>
         </label>
 
-        {/* CTA — redireciona pro checkout do gateway baseado na escolha do bump */}
-        <Btn onClick={function(){
-          var url = buildCheckoutUrl();
-          // Em dev (placeholder): mostra pra onde iria
-          if(url.indexOf("REPLACE_")>=0){
-            alert("🔗 Redirecionaria para:\n\n"+url+"\n\n(Substitua os links REPLACE_* no código pelos seus links reais do Kiwify/Hotmart)");
-            return;
-          }
-          window.location.href = url;
-        }} pulse>PAGAR ${total} — IR AL PAGO SEGURO →</Btn>
+        {/* ─── CTA — agora é tag <a href> real para o GTM detectar como gtm.linkClick ─── */}
+        {/* Mantém o id e a class específicos para uso em triggers do GTM. */}
+        {/* O href é construído na renderização e contém todos os UTMs + dados do quiz. */}
+        <BtnLink
+          href={checkoutUrl}
+          id="btn-checkout-hotmart"
+          className="btn-checkout-hotmart btn-hotmart-redirect"
+          pulse
+        >PAGAR ${total} — IR AL PAGO SEGURO →</BtnLink>
 
         <p style={{fontSize:11,color:"var(--tl)",textAlign:"center",marginTop:12,lineHeight:1.5,fontWeight:600}}>
           Al hacer clic te llevamos al checkout seguro de Kiwify.<br/>Tarjeta, PayPal, Pix y Apple Pay disponibles.
