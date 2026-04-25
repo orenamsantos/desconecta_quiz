@@ -26,6 +26,51 @@ const SOURCES = [
   "desconecta-quiz-v3.jsx",
 ];
 
+function patchQuizSourceForGtmLinkClicks(src, file) {
+  if (file !== "desconecta-quiz-v3.jsx") return src;
+
+  // Troca o CTA final do checkout de <Btn onClick={window.location.href = url}> para
+  // um <a href={buildCheckoutUrl()}> real. Assim o GTM identifica nativamente como
+  // gtm.linkClick, com href/id/class presentes desde o HTML renderizado pelo app.
+  const checkoutCtaRegex = /<Btn\s+onClick=\{function\(\)\{var url=buildCheckoutUrl\(\);if\(url\.indexOf\("REPLACE_"\)>=0\)\{alert\("[\s\S]*?window\.location\.href\s*=\s*url;\}\}\s+pulse>PAGAR \$\{total\} — IR AL PAGO SEGURO →<\/Btn>/;
+
+  const checkoutCtaLink = `<a
+        href={buildCheckoutUrl()}
+        id="checkout-payment-link"
+        className="checkout-payment-link gtm-link-click"
+        data-gtm-link-click="true"
+        style={{
+          display:"block",
+          width:"100%",
+          padding:"17px 24px",
+          background:"var(--pr)",
+          color:"#fff",
+          border:"none",
+          borderRadius:"var(--rd)",
+          fontFamily:"var(--ft)",
+          fontSize:16,
+          fontWeight:900,
+          cursor:"pointer",
+          transition:"all .15s",
+          boxShadow:"0 4px 16px rgba(232,83,46,.35)",
+          letterSpacing:"0.01em",
+          animation:"slowPulse 2.4s ease-in-out infinite",
+          textAlign:"center",
+          textDecoration:"none"
+        }}
+      >PAGAR ${"${total}"} — IR AL PAGO SEGURO →</a>`;
+
+  const patched = src.replace(checkoutCtaRegex, checkoutCtaLink);
+
+  if (patched === src) {
+    console.warn("⚠ GTM link click patch: checkout CTA pattern not found; source left unchanged.");
+  } else {
+    console.log("✓ GTM link click patch: checkout CTA is now a native <a href> link");
+  }
+
+  return patched;
+}
+
 const GTM_LINK_CLICK_HELPER = [
   "<script>",
   "(function(){",
@@ -108,7 +153,8 @@ async function build() {
 
   const compiled = [];
   for (const file of SOURCES) {
-    const src = fs.readFileSync(path.join(ROOT, file), "utf8");
+    let src = fs.readFileSync(path.join(ROOT, file), "utf8");
+    src = patchQuizSourceForGtmLinkClicks(src, file);
     const result = await babel.transformAsync(src, {
       presets: [["@babel/preset-react", { runtime: "classic" }]],
       babelrc: false,
