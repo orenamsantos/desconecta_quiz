@@ -1128,13 +1128,24 @@ function App(){
     // ─── que possa ser injetada no atributo href da tag <a>. Isso permite
     // ─── que o GTM detecte o clique como gtm.linkClick nativamente.
     function buildCheckoutUrl(){
+      // ─── Lê o sck do cookie 'index' gravado pela Tag Index do GTM.
+      // ─── A Tag Index roda em DOM Ready e grava o cookie ANTES do React
+      // ─── renderizar a tela de checkout, então o cookie já está disponível
+      // ─── aqui. Isso garante que o sck viaje na URL pra Hotmart, fechando
+      // ─── o ciclo de atribuição do método M.A.P (indexador → checkout → postback).
+      function getCookie(name){
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : '';
+      }
+      var sckCookie = getCookie('index');
+
       var base;
       if(bump){
         base = CHECKOUT_LINKS["bump_"+bumpKey] || CHECKOUT_LINKS.bump_emergencia;
       } else {
         base = downsell ? CHECKOUT_LINKS.plan_only_downsell : CHECKOUT_LINKS.plan_only;
       }
-      var params = new URLSearchParams({
+      var paramsObj = {
         utm_source:"quiz",
         utm_medium:"checkout",
         utm_campaign:"desconecta21",
@@ -1145,7 +1156,11 @@ function App(){
         score:String(calcScore(ans)),
         reaction:ans.reaction||"",
         age:String(ans.age||"")
-      });
+      };
+      // Inclui o sck (indexador) só se foi capturado do cookie.
+      // Protege contra caso edge onde a Tag Index ainda não rodou.
+      if(sckCookie) paramsObj.sck = sckCookie;
+      var params = new URLSearchParams(paramsObj);
       return base + (base.indexOf("?")>=0?"&":"?") + params.toString();
     }
     // URL pronta para o atributo href
@@ -1202,7 +1217,7 @@ function App(){
 
         {/* ─── CTA — agora é tag <a href> real para o GTM detectar como gtm.linkClick ─── */}
         {/* Mantém o id e a class específicos para uso em triggers do GTM. */}
-        {/* O href é construído na renderização e contém todos os UTMs + dados do quiz. */}
+        {/* O href é construído na renderização e contém todos os UTMs + dados do quiz + sck. */}
         <BtnLink
           href={checkoutUrl}
           id="btn-checkout-hotmart"
