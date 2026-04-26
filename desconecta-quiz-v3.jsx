@@ -461,6 +461,26 @@ function ExitIntent({show,onAccept,childName}){
     : modal;
 }
 
+// ─── CLARITY TRACKING HELPERS ────────────────────────────────────────────────
+// trackClarity: dispara eventos custom no Microsoft Clarity. Falha silenciosa
+// se Clarity ainda não carregou ou está bloqueado por adblocker. Não interfere
+// no fluxo do quiz.
+function trackClarity(eventName, customData){
+  try {
+    if(typeof window === "undefined") return;
+    if(typeof window.clarity !== "function") return;
+    if(eventName) window.clarity("event", eventName);
+    if(customData){
+      Object.keys(customData).forEach(function(key){
+        var val = customData[key];
+        if(val !== null && val !== undefined && val !== "") {
+          window.clarity("set", key, String(val));
+        }
+      });
+    }
+  } catch(_){}
+}
+
 function App(){
   const [scr,setScr] = useState("start");
   const [cur,setCur] = useState(1);
@@ -480,6 +500,59 @@ function App(){
   const [commitYes,setCommitYes] = useState(false);
   const rf = useRef(null);
 
+  // ─── CLARITY: dispara quiz_view no primeiro mount (landing page) ────────────
+  useEffect(function(){
+    trackClarity("quiz_view");
+  }, []);
+
+  // ─── CLARITY: dispara eventos de mudança de tela (start → quiz → loading → result → pricing → checkout → thankyou)
+  useEffect(function(){
+    if(scr === "start") return; // já foi disparado no mount
+    var screenEvents = {
+      "loading": "quiz_completed",
+      "result": "diagnosis_viewed",
+      "pricing": "plan_viewed",
+      "checkout": "checkout_viewed",
+      "thankyou": "thankyou_viewed",
+      "oto2": "upsell_viewed"
+    };
+    if(screenEvents[scr]){
+      trackClarity(screenEvents[scr]);
+    }
+  }, [scr]);
+
+  // ─── CLARITY: dispara step_completed quando avança de etapa ────────────────
+  // Inclui o slug da pergunta como custom tag pra filtrar gravações depois.
+  useEffect(function(){
+    if(scr !== "quiz") return;
+    if(cur < 1 || cur > TOTAL_STEPS) return;
+    var step = STEPS.find(function(s){return s.id === cur});
+    if(!step) return;
+    trackClarity("step_viewed", {
+      step_number: cur,
+      step_slug: step.slug,
+      step_type: step.type,
+      step_phase: step.phase
+    });
+  }, [scr, cur]);
+
+  // ─── CLARITY: enriquece tags com score + perfil completo quando vê o resultado
+  // Permite filtrar gravações por: score range, idade da criança, reação, tempo de tela.
+  useEffect(function(){
+    if(scr !== "result") return;
+    var score = calcScore(ans);
+    var scoreBand = score >= 70 ? "alta" : score >= 50 ? "moderada" : "baja";
+    trackClarity(null, {
+      quiz_score: score,
+      quiz_score_band: scoreBand,
+      quiz_age: ans.age || "",
+      quiz_screen_time: ans.screenTime || "",
+      quiz_reaction: ans.reaction || "",
+      quiz_critical_count: (ans.criticalMoments || []).length,
+      quiz_tried_count: (ans.triedMethods || []).length
+    });
+  }, [scr]);
+
   const W = ["dejar el celular","volver a jugar","dormir mejor","concentrarse","obedecer sin pelear"];
   const top2 = function(){if(rf.current)rf.current.scrollTo({top:0,behavior:"smooth"})};
 
@@ -492,6 +565,20 @@ function App(){
   var pn = ud.parentName || "";
 
   var goN = function(){
+    // ─── CLARITY: dispara step_answered com a resposta dada (quando aplicável)
+    var step = STEPS.find(function(s){return s.id === cur});
+    if(step){
+      var customData = {
+        last_step_answered: cur,
+        last_step_slug: step.slug
+      };
+      // Adiciona a resposta como tag pra filtrar gravações depois
+      if(step.slug && ans[step.slug]){
+        var val = ans[step.slug];
+        customData["answer_" + step.slug] = Array.isArray(val) ? val.join(",") : val;
+      }
+      trackClarity("step_answered", customData);
+    }
     if(cur+1 > TOTAL_STEPS){ setScr("loading"); return; }
     setAd("out");
     setTimeout(function(){ setCur(cur+1); setAd("in"); top2(); },220);
@@ -536,7 +623,7 @@ function App(){
 
         <div style={{marginBottom:20}}><PhoneLoop childName={ud.childName} width={280}/></div>
 
-        <Btn onClick={function(){setScr("quiz");setCur(1);top2()}} pulse>VER SI AÚN ES REVERSIBLE →</Btn>
+        <Btn onClick={function(){trackClarity("quiz_started");setScr("quiz");setCur(1);top2()}} pulse>VER SI AÚN ES REVERSIBLE →</Btn>
         <p style={{fontSize:11,color:"var(--tl)",marginTop:10,fontWeight:600}}>Gratis • 2 minutos • 12.347 familias ya lo hicieron</p>
 
         <div style={{display:"flex",justifyContent:"center",gap:14,marginTop:16,fontSize:11,color:"var(--tl)",fontWeight:600}}>
@@ -1080,7 +1167,7 @@ function App(){
         </div>
 
         {/* EXIT-INTENT DOWNSELL MODAL — só dispara em intenção real de saída (mouseleave desktop / back button mobile). Sem timer. */}
-        <ExitIntent show={scr==="pricing" && !downsell} onAccept={function(){setDownsell(true);top2()}} childName={cn}/>
+        <ExitIntent show={scr==="pricing" && !downsell} onAccept={function(){trackClarity("downsell_accepted");setDownsell(true);top2()}} childName={cn}/>
       </div>
     </div>;
   }
@@ -1127,29 +1214,24 @@ function App(){
     // ─── IMPORTANTE: agora calculada na renderização (não no clique) para
     // ─── que possa ser injetada no atributo href da tag <a>. Isso permite
     // ─── que o GTM detecte o clique como gtm.linkClick nativamente.
-    // ─── Lê o sck (session click key) do M.A.P. ────────────────────────────
-    // ─── Tenta na ordem: 1) URL atual  2) cookie "index"  3) string vazia.
-    // ─── Esse valor é o "indexador" que conecta visita → clique → venda.
-    function getSck(){
-      try {
-        // 1) Tenta da URL atual (fonte primária — o GTM injeta na URL via replaceState)
-        var urlSck = new URLSearchParams(window.location.search).get("sck");
-        if(urlSck) return urlSck;
-        // 2) Fallback: tenta do cookie "index" (mesma fonte que a variável GTM "Cookie - index")
-        var m = document.cookie.match(/(?:^|;\s*)index=([^;]+)/);
-        if(m) return decodeURIComponent(m[1]);
-      } catch(_){}
-      return "";
-    }
-
     function buildCheckoutUrl(){
+      // ─── Lê o sck do cookie 'index' gravado pela Tag Index do GTM.
+      // ─── A Tag Index roda em DOM Ready e grava o cookie ANTES do React
+      // ─── renderizar a tela de checkout, então o cookie já está disponível
+      // ─── aqui. Isso garante que o sck viaje na URL pra Hotmart, fechando
+      // ─── o ciclo de atribuição do método M.A.P (indexador → checkout → postback).
+      function getCookie(name){
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : '';
+      }
+      var sckCookie = getCookie('index');
+
       var base;
       if(bump){
         base = CHECKOUT_LINKS["bump_"+bumpKey] || CHECKOUT_LINKS.bump_emergencia;
       } else {
         base = downsell ? CHECKOUT_LINKS.plan_only_downsell : CHECKOUT_LINKS.plan_only;
       }
-      var sckValue = getSck();
       var paramsObj = {
         utm_source:"quiz",
         utm_medium:"checkout",
@@ -1162,8 +1244,9 @@ function App(){
         reaction:ans.reaction||"",
         age:String(ans.age||"")
       };
-      // Adiciona sck APENAS se existir (evita mandar sck="" vazio)
-      if(sckValue) paramsObj.sck = sckValue;
+      // Inclui o sck (indexador) só se foi capturado do cookie.
+      // Protege contra caso edge onde a Tag Index ainda não rodou.
+      if(sckCookie) paramsObj.sck = sckCookie;
       var params = new URLSearchParams(paramsObj);
       return base + (base.indexOf("?")>=0?"&":"?") + params.toString();
     }
@@ -1221,11 +1304,21 @@ function App(){
 
         {/* ─── CTA — agora é tag <a href> real para o GTM detectar como gtm.linkClick ─── */}
         {/* Mantém o id e a class específicos para uso em triggers do GTM. */}
-        {/* O href é construído na renderização e contém todos os UTMs + dados do quiz. */}
+        {/* O href é construído na renderização e contém todos os UTMs + dados do quiz + sck. */}
         <BtnLink
           href={checkoutUrl}
           id="btn-checkout-hotmart"
           className="btn-checkout-hotmart btn-hotmart-redirect"
+          onClick={function(){
+            // ─── CLARITY: registra clique no checkout com info completa do pedido
+            trackClarity("checkout_clicked", {
+              checkout_total: total,
+              checkout_main_price: mainPrice,
+              checkout_has_bump: bump ? "yes" : "no",
+              checkout_bump_key: bump ? bumpKey : "",
+              checkout_is_downsell: downsell ? "yes" : "no"
+            });
+          }}
           pulse
         >PAGAR ${total} — IR AL PAGO SEGURO →</BtnLink>
 
