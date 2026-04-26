@@ -1127,6 +1127,21 @@ function App(){
     // ─── IMPORTANTE: agora calculada na renderização (não no clique) para
     // ─── que possa ser injetada no atributo href da tag <a>. Isso permite
     // ─── que o GTM detecte o clique como gtm.linkClick nativamente.
+    // ─── Lê o sck (session click key) do M.A.P. ────────────────────────────
+    // ─── Tenta na ordem: 1) URL atual  2) cookie "index"  3) string vazia.
+    // ─── Esse valor é o "indexador" que conecta visita → clique → venda.
+    function getSck(){
+      try {
+        // 1) Tenta da URL atual (fonte primária — o GTM injeta na URL via replaceState)
+        var urlSck = new URLSearchParams(window.location.search).get("sck");
+        if(urlSck) return urlSck;
+        // 2) Fallback: tenta do cookie "index" (mesma fonte que a variável GTM "Cookie - index")
+        var m = document.cookie.match(/(?:^|;\s*)index=([^;]+)/);
+        if(m) return decodeURIComponent(m[1]);
+      } catch(_){}
+      return "";
+    }
+
     function buildCheckoutUrl(){
       var base;
       if(bump){
@@ -1134,7 +1149,8 @@ function App(){
       } else {
         base = downsell ? CHECKOUT_LINKS.plan_only_downsell : CHECKOUT_LINKS.plan_only;
       }
-      var params = new URLSearchParams({
+      var sckValue = getSck();
+      var paramsObj = {
         utm_source:"quiz",
         utm_medium:"checkout",
         utm_campaign:"desconecta21",
@@ -1145,7 +1161,10 @@ function App(){
         score:String(calcScore(ans)),
         reaction:ans.reaction||"",
         age:String(ans.age||"")
-      });
+      };
+      // Adiciona sck APENAS se existir (evita mandar sck="" vazio)
+      if(sckValue) paramsObj.sck = sckValue;
+      var params = new URLSearchParams(paramsObj);
       return base + (base.indexOf("?")>=0?"&":"?") + params.toString();
     }
     // URL pronta para o atributo href
