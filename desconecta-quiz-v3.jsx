@@ -1323,14 +1323,14 @@ function App(){
         >PAGAR ${total} — IR AL PAGO SEGURO →</BtnLink>
 
         <p style={{fontSize:11,color:"var(--tl)",textAlign:"center",marginTop:12,lineHeight:1.5,fontWeight:600}}>
-          Al hacer clic te llevamos al checkout seguro de Kiwify.<br/>Tarjeta, PayPal, Pix y Apple Pay disponibles.
+          Al hacer clic te llevamos al checkout seguro de Hotmart.<br/>Tarjeta, PayPal, Pix y Apple Pay disponibles.
         </p>
 
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:14,marginTop:14,fontSize:10,color:"var(--tl)",fontWeight:700}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Icon name="lock" size={12} strokeWidth={2}/>SSL 256-bit</span>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Icon name="shield-check" size={12} strokeWidth={2}/>Garantía 7 días</span>
         </div>
-        <p style={{fontSize:10,color:"var(--tl)",textAlign:"center",marginTop:10,lineHeight:1.5}}>Procesado por Stripe • Tarjeta, PayPal y Apple Pay disponibles</p>
+        <p style={{fontSize:10,color:"var(--tl)",textAlign:"center",marginTop:10,lineHeight:1.5}}>Procesado por Hotmart • Tarjeta, PayPal y Apple Pay disponibles</p>
       </div>
     </div>;
   }
